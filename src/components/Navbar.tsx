@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
 
 const nav = [
-  { href: "/perawatan", label: "PERAWATAN" },
-  { href: "/bengkel", label: "TEMUKAN" },
+  { href: "/katalog", label: "KATALOG" },
+  { href: "/bengkel", label: "BENGKEL" },
   { href: "/cek-masalah", label: "CEK" },
   { href: "/panduan-darurat", label: "DARURAT" },
   { href: "/edukasi", label: "EDUKASI" },
@@ -45,15 +45,14 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-[var(--background)] border-b border-[var(--border)]">
       <div className="h-[6px] hazard-stripe w-full" aria-hidden />
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 flex h-[64px] items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-3 shrink-0">
-          <div className="h-9 w-9 rounded-[6px] bg-[#0A0A0A] dark:bg-white text-white dark:text-black grid place-items-center font-black text-[15px] tracking-tighter border-[1.5px] border-[#0A0A0A] dark:border-white relative">
-            M
-            <span className="absolute -top-1 -right-1 h-2 w-2 bg-white dark:bg-[#0A0A0A] rounded-full border-[1.5px] border-[#0A0A0A] dark:border-white" />
-          </div>
-          <div className="leading-none">
-            <div className="font-black tracking-[-0.04em] text-[17px]">MOTOKU</div>
-            <div className="mono text-[9px] tracking-[0.14em] text-[#717171] -mt-0.5">SAVE YOUR BIKE • SAVE TIME</div>
-          </div>
+        <Link href="/" className="flex items-center shrink-0">
+          <img
+            src="/logo-motorkita.jpeg"
+            alt="Motorkita"
+            width={160}
+            height={44}
+            className="h-[32px] sm:h-[36px] w-auto object-contain dark:invert"
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">

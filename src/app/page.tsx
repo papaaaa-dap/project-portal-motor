@@ -1,7 +1,10 @@
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import { ArticleCard, WorkshopCard, CategoryCard } from "@/components/ui/Card";
-import { articles, categories, workshops, motorProblems } from "@/lib/data/mocks";
+import { workshops, motorProblems } from "@/lib/data/mocks";
+import { parts } from "@/lib/data/parts";
+import { faqs } from "@/lib/data/oli";
+import FaqAccordion from "@/components/FaqAccordion";
 
 export default function HomePage(){
   return (
@@ -44,12 +47,12 @@ export default function HomePage(){
 
         {/* Bottom caption + actions */}
         <div className="mx-auto max-w-[720px] px-4 sm:px-6 pt-6 pb-8 text-center">
-          <p className="text-sm leading-relaxed text-[#717171]">We design private residences and commercial spaces from a blank - MotoKu translates that: dari cek gejala 30 detik sampai navigasi bengkel 24 jam, semua tanpa template berulang.</p>
+          <p className="text-sm leading-relaxed text-[#717171]">Motorkita hadir dari blank — dari cek gejala 30 detik sampai navigasi bengkel 24 jam, semua tanpa template berulang.</p>
           <div className="mt-5 flex flex-col items-center justify-center gap-3">
             <div className="w-full max-w-[600px]"><SearchBar large /></div>
             <div className="flex gap-2 mono text-xs font-black">
               <Link href="/bengkel" className="h-11 px-6 rounded-full bg-[#0A0A0A] text-white grid place-items-center hover:bg-black transition">Cari Bengkel</Link>
-              <Link href="/perawatan" className="h-11 px-6 rounded-full bg-white border border-[#0A0A0A] text-[#0A0A0A] grid place-items-center hover:bg-[#0A0A0A] hover:text-white transition">Lihat Perawatan</Link>
+              <Link href="/katalog" className="h-11 px-6 rounded-full bg-white border border-[#0A0A0A] text-[#0A0A0A] grid place-items-center hover:bg-[#0A0A0A] hover:text-white transition">Lihat Katalog</Link>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap justify-center gap-2 mono text-[11px] font-bold">
@@ -76,19 +79,40 @@ export default function HomePage(){
         </div>
       </section>
 
-      {/* Perawatan */}
+      {/* Katalog */}
       <section className="mx-auto max-w-[1280px] px-4 sm:px-6 py-8 bg-[#FFFFFF]">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-[22px] font-black tracking-[-0.03em] text-[#0A0A0A]">PERAWATAN PILIHAN</h2>
-            <p className="text-sm text-[#717171] mt-1 max-w-[60ch]">Panduan 2 menit per topik, dari oli sampai kelistrikan.</p>
+            <h2 className="text-[22px] font-black tracking-[-0.03em] text-[#0A0A0A]">KATALOG — OLI & SPAREPART</h2>
+            <p className="text-sm text-[#717171] mt-1 max-w-[60ch]">Harga part only Surabaya • Oli, CVT, ban, busi, filter, rem, aki, rantai — tap untuk detail.</p>
           </div>
-          <Link href="/perawatan" className="mono text-xs font-black tracking-[0.08em] h-9 px-4 rounded-full bg-white border border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white flex items-center gap-2 transition">LIHAT SEMUA →</Link>
+          <Link href="/katalog" className="mono text-xs font-black tracking-[0.08em] h-9 px-4 rounded-full bg-white border border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white flex items-center gap-2 transition">LIHAT SEMUA →</Link>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2 mono text-[11px] font-bold">
+          {[
+            ["oli-mesin","Oli Mesin"],["cvt","CVT"],["ban","Ban"],["busi","Busi"],["kampas-rem","Kampas"], ["aki","Aki"]
+          ].map(([slug,label])=> <Link key={slug} href={`/katalog?cat=${slug}`} className="px-3 py-1 rounded-full border border-[#0A0A0A]/15 hover:bg-[#0A0A0A] hover:text-white transition">{label}</Link>)}
         </div>
         <div className="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {articles.slice(0,4).map(a=>{
-            const cat = categories.find(c=>c.id===a.category_id)?.name||"";
-            return <ArticleCard key={a.id} title={a.title} excerpt={a.excerpt} cover={a.cover_url} href={`/perawatan/${a.slug}`} category={cat} />
+          {parts.slice(0,8).map(p=>{
+            const cat = p.category;
+            const badge = cat==="oli-mesin" ? (p.specs["SAE"]||"") : cat==="ban" ? (p.specs["Ukuran"]||"") : cat==="busi" ? (p.specs["Tipe"]||"") : p.specs[Object.keys(p.specs)[0]]||"";
+            return (
+            <Link key={p.id} href={`/katalog/${p.slug}`} className="group bg-white rounded-[16px] border border-[#0A0A0A] overflow-hidden flex flex-col hover:shadow-[4px_4px_0_#0A0A0A] hover:-translate-y-[1px] transition-all">
+              <div className="h-[130px] bg-[#F2F2F2] relative overflow-hidden">
+                <img src={p.cover_url} alt={p.name} className="h-full w-full object-cover group-hover:scale-[1.04] transition duration-500" />
+                <span className="absolute top-2 left-2 mono text-[10px] font-black bg-[#0A0A0A] text-white px-2 py-1 rounded-full">{p.category.replace("-"," ").toUpperCase()}</span>
+                <span className="absolute top-2 right-2 mono text-[10px] font-bold bg-white border border-[#0A0A0A]/15 px-2 py-1 rounded-full">{badge}</span>
+              </div>
+              <div className="p-3 flex-1 flex flex-col">
+                <div className="mono text-[10px] font-black tracking-[0.08em] text-neutral-500">{p.brand.toUpperCase()}</div>
+                <div className="font-black text-[13px] leading-tight line-clamp-1">{p.name}</div>
+                <div className="mono text-[11px] text-neutral-500">{p.satuan}</div>
+                <div className="mt-2 font-black text-sm">Rp {p.harga_min.toLocaleString("id-ID")} – {p.harga_max.toLocaleString("id-ID")}</div>
+                <div className="mono text-[10px] text-neutral-500 line-clamp-1">{p.cocok_motor.slice(0,2).join(", ")}</div>
+              </div>
+            </Link>
+            );
           })}
         </div>
       </section>
@@ -146,11 +170,26 @@ export default function HomePage(){
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="mx-auto max-w-[1280px] px-4 sm:px-6 py-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-[22px] font-black tracking-[-0.03em] text-[#0A0A0A]">FAQ — JAWABAN CEPAT</h2>
+            <p className="text-sm text-[#717171] mt-1">Pertanyaan paling sering soal oli & perawatan.</p>
+          </div>
+          <Link href="/edukasi" className="mono text-xs font-black tracking-[0.08em] h-9 px-4 rounded-full bg-[#0A0A0A] text-white grid place-items-center hover:bg-black transition">LIHAT EDUKASI →</Link>
+        </div>
+        <div className="mt-4"><FaqAccordion items={faqs.slice(0,4)} /></div>
+        <div className="mt-4 text-center">
+          <Link href="/edukasi" className="mono text-xs font-bold text-[#0A0A0A] underline decoration-2 underline-offset-4">Lihat semua 6 FAQ + kontak →</Link>
+        </div>
+      </section>
+
       {/* CTA Motor Saya */}
       <section className="mx-auto max-w-[1280px] px-4 sm:px-6 pb-10">
         <div className="relative overflow-hidden bg-[#0A0A0A] rounded-[20px] border border-[#0A0A0A] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="relative text-white max-w-[56ch]">
-            <h3 className="text-[22px] font-black tracking-[-0.03em] leading-tight">SIMPAN MOTORMU DI MOTOKU</h3>
+            <h3 className="text-[22px] font-black tracking-[-0.03em] leading-tight">SIMPAN MOTORMU DI MOTORKITA</h3>
             <p className="text-sm text-white/70 mt-2 leading-relaxed">Dapatkan rekomendasi perawatan rule-based, riwayat servis, dan pengingat - untuk N motor sekaligus. Sinkron Supabase saat login.</p>
             <div className="mt-3 flex gap-2 mono text-[11px] font-bold">
               <span className="px-2 py-1 rounded-full bg-white/10 border border-white/15">REMINDER OLI 2.000KM</span>

@@ -14,7 +14,7 @@ Audiens sekunder: admin CMS yang kurasi artikel, bengkel, dan masalah motor.
 
 ## Product Purpose
 
-MotoKu adalah portal perawatan sepeda motor 3-in-1: edukasi + perawatan + discovery bengkel/layanan. Satu tempat untuk memahami, merawat, dan menemukan kebutuhan motor — tanpa harus login untuk konsumsi informasi. Login hanya untuk personalisasi: Motor Saya (N motor), riwayat/ reminder servis, dan bookmark. Sukses = user bisa cek masalah awal, dapat langkah darurat, temukan bengkel terdekat dengan navigasi, dan kembali rutin karena reminder perawatan yang tepat.
+RideIn adalah portal perawatan sepeda motor 3-in-1: edukasi + perawatan + discovery bengkel/layanan. Satu tempat untuk memahami, merawat, dan menemukan kebutuhan motor — tanpa harus login untuk konsumsi informasi. Login hanya untuk personalisasi: Motor Saya (N motor), riwayat/ reminder servis, dan bookmark. Sukses = user bisa cek masalah awal, dapat langkah darurat, temukan bengkel terdekat dengan navigasi, dan kembali rutin karena reminder perawatan yang tepat.
 
 ## Positioning
 
@@ -45,7 +45,7 @@ Undecided: pricing/monetisasi bengkel, verifikasi rating bengkel, notifikasi pus
 
 ## Brand Commitments
 
-Nama MotoKu + tagline "Save Your Bike, Save Your Time" dipertahankan sebagai identitas. Tidak ada palet/font/logo yang mengikat — bebas redesign total. Voice sebelumnya: informatif, cepat, menenangkan saat darurat (tidak teknis berlebihan).
+Nama Ridein + tagline "Save Your Bike, Save Your Time" dipertahankan sebagai identitas. Tidak ada palet/font/logo yang mengikat — bebas redesign total. Voice sebelumnya: informatif, cepat, menenangkan saat darurat (tidak teknis berlebihan).
 
 ## Evidence on Hand
 

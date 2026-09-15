@@ -13,7 +13,7 @@ export default async function Detail({params}:{params: Promise<{id:string}>}){
       <p className="mt-2 text-sm">⭐ {w.rating} • {w.jam_operasional} • {w.kontak}</p>
       <div className="mt-2 flex flex-wrap gap-2">{w.layanan.map(l=> <span key={l} className="text-xs bg-slate-100 px-2 py-1 rounded-full">{l}</span>)}</div>
       <div className="mt-6 flex gap-2">
-        <a href={`https://maps.google.com/?q=${w.lat},${w.lng}`} target="_blank" className="px-6 py-3 rounded-full bg-neutral-1000 text-slate-900 font-bold hover:bg-neutral-800">Navigasi ke Peta →</a>
+        <a href={`https://maps.google.com/?q=${w.lat},${w.lng}`} target="_blank" className="px-6 py-3 rounded-full bg-[#0A0A0A] text-white font-bold hover:bg-black transition">Navigasi ke Peta →</a>
         <a href={`tel:${w.kontak}`} className="px-6 py-3 rounded-full border bg-white font-medium">Hubungi</a>
       </div>
       <p className="mt-6 text-xs text-neutral-500 bg-neutral-100 border border-neutral-200 p-3 rounded-lg">Jam operasional dapat berubah. Hubungi bengkel sebelum berangkat.</p>

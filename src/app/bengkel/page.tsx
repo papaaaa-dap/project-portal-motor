@@ -39,7 +39,7 @@ export default function BengkelPage(){
       <h1 className="mt-2 text-2xl font-bold">Bengkel Surabaya</h1>
       <p className="text-sm text-neutral-500">Gunakan lokasi untuk urutkan terdekat. Sumber data seeder 12 bengkel (MVP → 50).</p>
       <div className="mt-4 flex flex-wrap gap-2 items-center">
-        <button onClick={handleLoc} className="px-4 py-2 rounded-full bg-neutral-1000 text-slate-900 text-sm font-bold hover:bg-neutral-800">Gunakan lokasi saya</button>
+        <button onClick={handleLoc} className="px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-sm font-bold hover:bg-black transition">Gunakan lokasi saya</button>
         {loc && <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">Lokasi aktif: {loc[0].toFixed(3)}, {loc[1].toFixed(3)}</span>}
         {err && <span className="text-xs bg-neutral-100 text-neutral-900 px-2 py-1 rounded-full">{err}</span>}
       </div>

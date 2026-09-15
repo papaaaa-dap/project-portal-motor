@@ -54,6 +54,30 @@ export type MaintenanceRule = {
   description: string;
 };
 
+export type PartCategory =
+  | "oli-mesin" | "oli-gardan" | "oli-samping"
+  | "cvt" | "ban" | "busi" | "filter-udara"
+  | "rem" | "kampas-rem" | "aki" | "rantai" | "kelistrikan";
+
+export type Part = {
+  id: string;
+  slug: string;
+  category: PartCategory;
+  brand: string;
+  name: string;
+  harga_min: number;
+  harga_max: number;
+  satuan: string;
+  cover_url: string;
+  specs: Record<string,string>;
+  keunggulan: string[];
+  cocok_motor: string[];
+  interval_km: number;
+  interval_bulan?: number;
+  deskripsi: string;
+  bengkel_ids: string[];
+};
+
 export type Motorcycle = {
   id: string;
   brand: string;

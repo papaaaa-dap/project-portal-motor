@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Login(){
   return (
     <div className="mx-auto max-w-md px-4 py-10">
-      <h1 className="text-2xl font-bold">Masuk ke MotoKu</h1>
+      <h1 className="text-2xl font-bold">Masuk ke RideIn</h1>
       <p className="text-sm text-neutral-500">Login untuk akses Motor Saya, bookmark, dan reminder.</p>
       <form className="mt-6 space-y-3 bg-white border rounded-xl p-6" onSubmit={e=>e.preventDefault()}>
         <input placeholder="Email" type="email" className="w-full h-10 border rounded-lg px-3"/>

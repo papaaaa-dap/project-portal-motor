@@ -33,7 +33,7 @@ export default function CekMasalah(){
               <h4 className="mt-4 text-sm font-semibold">Langkah Awal</h4>
               <ol className="mt-1 list-decimal pl-5 text-sm text-neutral-600">{active.langkah.map(s=> <li key={s}>{s}</li>)}</ol>
               <div className="mt-6 flex gap-2">
-                <Link href="/bengkel" className="px-4 py-2 rounded-full bg-neutral-1000 text-slate-900 text-sm font-bold hover:bg-neutral-800">Cari Bengkel Terdekat →</Link>
+                <Link href="/bengkel" className="px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-sm font-bold hover:bg-black transition">Cari Bengkel Terdekat →</Link>
                 <Link href={`/panduan-darurat#${active.slug}`} className="px-4 py-2 rounded-full border bg-white text-sm">Panduan Darurat</Link>
               </div>
             </div>

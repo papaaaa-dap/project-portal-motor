@@ -7,8 +7,13 @@ export default function Footer(){
         <div className="grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-8">
           <div>
             <div className="flex items-center gap-2">
-              <span className="h-9 w-9 rounded-[8px] bg-white text-[#0A0A0A] grid place-items-center font-black">M</span>
-              <span className="font-black tracking-[-0.04em] text-lg">MOTOKU</span>
+              <img
+                src="/logo-motorkita.jpeg"
+                alt="Motorkita"
+                width={140}
+                height={38}
+                className="h-8 w-auto object-contain invert"
+              />
               <span className="mono text-[10px] tracking-[0.12em] bg-white/10 px-2 py-1 rounded-full">INDONESIA</span>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-white/70 max-w-[36ch]">Satu tempat untuk memahami, merawat, dan menemukan kebutuhan motor. Dari cek gejala sampai navigasi bengkel - tanpa login, langsung pakai.</p>
@@ -22,8 +27,8 @@ export default function Footer(){
           <div>
             <h4 className="mono text-[11px] tracking-[0.14em] font-black text-white/90">KANAL</h4>
             <ul className="mt-3 space-y-2 text-sm text-white/70">
-              <li><Link href="/perawatan" className="hover:text-white">Perawatan</Link></li>
-              <li><Link href="/bengkel" className="hover:text-white">Temukan</Link></li>
+              <li><Link href="/katalog" className="hover:text-white">Katalog</Link></li>
+              <li><Link href="/bengkel" className="hover:text-white">Bengkel</Link></li>
               <li><Link href="/edukasi" className="hover:text-white">Edukasi</Link></li>
             </ul>
           </div>
@@ -40,7 +45,8 @@ export default function Footer(){
             <ul className="mt-3 space-y-2 text-sm text-white/70">
               <li><Link href="/motor-saya" className="hover:text-white">Motor Saya</Link></li>
               <li><Link href="/login" className="hover:text-white">Login / Register</Link></li>
-              <li className="mono text-[11px] text-white/40 pt-2">© 2026 MotoKu. Bukan diagnosis profesional. Selalu ke bengkel untuk perbaikan.</li>
+              <li className="mono text-[11px] text-white/40 pt-2">© 2026 Motorkita. Khusus motor standar. Bukan diagnosis profesional.</li>
+              <li className="mono text-[11px] text-white/40">support@motorkita.id • halo@motorkita.id</li>
             </ul>
           </div>
         </div>

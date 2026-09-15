@@ -19,7 +19,7 @@ export default function Darurat(){
               <ol className="list-decimal pl-5 text-sm text-neutral-600 mt-1">{p.langkah.map(s=> <li key={s}>{s}</li>)}</ol>
             </div>
             <div className="mt-4 flex gap-2">
-              <Link href="/bengkel" className="px-4 py-2 rounded-full bg-neutral-900 text-white text-sm font-bold hover:bg-neutral-1000">Cari Bengkel/Layanan Terdekat →</Link>
+              <Link href="/bengkel" className="px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-sm font-bold hover:bg-black transition">Cari Bengkel/Layanan Terdekat →</Link>
               <Link href="/cek-masalah" className="px-4 py-2 rounded-full border bg-white text-sm">Cek Masalah Lain</Link>
             </div>
           </div>
