@@ -8,10 +8,12 @@ import PartForm from "@/components/admin/PartForm";
 import WorkshopForm from "@/components/admin/WorkshopForm";
 import ArticleForm from "@/components/admin/ArticleForm";
 import ProblemForm from "@/components/admin/ProblemForm";
-import { getPartsMock, savePartsMock } from "@/lib/repo/partsRepo";
-import { getWorkshopsMock, saveWorkshopsMock } from "@/lib/repo/workshopsRepo";
-import { getArticlesMock, saveArticlesMock } from "@/lib/repo/articlesRepo";
-import { getProblemsMock, saveProblemsMock } from "@/lib/repo/problemsRepo";
+import { getPartsMock, savePartsMock, fetchPartsSupabase, deletePartSupabase } from "@/lib/repo/partsRepo";
+import { getWorkshopsMock, saveWorkshopsMock, fetchWorkshopsSupabase, deleteWorkshopSupabase } from "@/lib/repo/workshopsRepo";
+import { getArticlesMock, saveArticlesMock, fetchArticlesSupabase, deleteArticleSupabase } from "@/lib/repo/articlesRepo";
+import { getProblemsMock, saveProblemsMock, fetchProblemsSupabase, deleteProblemSupabase } from "@/lib/repo/problemsRepo";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const TABS = ["Katalog","Bengkel","Artikel","Masalah"] as const;
 
@@ -29,13 +31,56 @@ export default function Admin(){
   const [editingA, setEditingA] = useState<Article|null>(null);
   const [editingP, setEditingP] = useState<MotorProblem|null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [adminChecked, setAdminChecked] = useState(false);
 
   useEffect(()=>{
-    setList(getPartsMock());
-    setWList(getWorkshopsMock());
-    setAList(getArticlesMock());
-    setPList(getProblemsMock());
-    setIsAdmin(localStorage.getItem("motorkita_admin")==="true");
+    // load data: Supabase jika configured, fallback mock
+    const load = async () => {
+      if (isSupabaseConfigured()) {
+        try {
+          const [p, w, a, m] = await Promise.all([fetchPartsSupabase(), fetchWorkshopsSupabase(), fetchArticlesSupabase(), fetchProblemsSupabase()]);
+          setList(p); setWList(w); setAList(a); setPList(m);
+        } catch {
+          setList(getPartsMock()); setWList(getWorkshopsMock()); setAList(getArticlesMock()); setPList(getProblemsMock());
+        }
+      } else {
+        setList(getPartsMock()); setWList(getWorkshopsMock()); setAList(getArticlesMock()); setPList(getProblemsMock());
+      }
+      // cek Supabase role dulu, fallback ke mock toggle
+      if (isSupabaseConfigured()) {
+        const sb = createClient();
+        const { data } = await sb.auth.getUser();
+        const email = data.user?.email ?? null;
+        setAdminEmail(email);
+        if (!data.user) {
+          setIsAdmin(localStorage.getItem("motorkita_admin")==="true");
+          setAdminChecked(true);
+          return;
+        }
+        const { data: profile } = await sb.from("profiles").select("role").eq("id", data.user.id).single();
+        if (profile?.role === "admin") {
+          setIsAdmin(true);
+          setAdminChecked(true);
+        } else {
+          // user biasa coba buka /admin → tendang ke home/motor-saya
+          setIsAdmin(false);
+          setAdminChecked(true);
+          // jangan auto-redirect jika masih loading mock, tapi jika Supabase aktif dan bukan admin, arahkan
+          setTimeout(() => {
+            if (window.location.pathname === "/admin") {
+              alert("Akun ini bukan admin. Mengalihkan ke beranda.");
+              window.location.href = "/motor-saya";
+            }
+          }, 400);
+          return;
+        }
+      } else {
+        setIsAdmin(localStorage.getItem("motorkita_admin")==="true");
+        setAdminChecked(true);
+      }
+    };
+    load();
   },[]);
 
   const persistPart = (next: Part[])=>{ setList(next); savePartsMock(next); };
@@ -43,22 +88,54 @@ export default function Admin(){
   const persistA = (next: Article[])=>{ setAList(next); saveArticlesMock(next); };
   const persistP = (next: MotorProblem[])=>{ setPList(next); saveProblemsMock(next); };
 
-  const handleSavePart = (p: Part)=>{
+  const handleSavePart = async (p: Part)=>{
+    if (isSupabaseConfigured() && isAdmin) {
+      try {
+        const { upsertPartSupabase } = await import("@/lib/repo/partsRepo");
+        const next = await upsertPartSupabase(p);
+        setList(next);
+        return;
+      } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
     const exists = list.find(x=> x.id===p.id);
     const next = exists ? list.map(x=> x.id===p.id ? p : x) : [p, ...list];
     persistPart(next);
   };
-  const handleSaveW = (w: Workshop)=>{
+  const handleSaveW = async (w: Workshop)=>{
+    if (isSupabaseConfigured() && isAdmin) {
+      try {
+        const { upsertWorkshopSupabase } = await import("@/lib/repo/workshopsRepo");
+        const next = await upsertWorkshopSupabase(w);
+        setWList(next);
+        return;
+      } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
     const exists = wList.find(x=> x.id===w.id);
     const next = exists ? wList.map(x=> x.id===w.id ? w : x) : [w, ...wList];
     persistW(next);
   };
-  const handleSaveA = (a: Article)=>{
+  const handleSaveA = async (a: Article)=>{
+    if (isSupabaseConfigured() && isAdmin) {
+      try {
+        const { upsertArticleSupabase } = await import("@/lib/repo/articlesRepo");
+        const next = await upsertArticleSupabase(a);
+        setAList(next);
+        return;
+      } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
     const exists = aList.find(x=> x.id===a.id);
     const next = exists ? aList.map(x=> x.id===a.id ? a : x) : [a, ...aList];
     persistA(next);
   };
-  const handleSaveP = (p: MotorProblem)=>{
+  const handleSaveP = async (p: MotorProblem)=>{
+    if (isSupabaseConfigured() && isAdmin) {
+      try {
+        const { upsertProblemSupabase } = await import("@/lib/repo/problemsRepo");
+        const next = await upsertProblemSupabase(p);
+        setPList(next);
+        return;
+      } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
     const exists = pList.find(x=> x.id===p.id);
     const next = exists ? pList.map(x=> x.id===p.id ? p : x) : [p, ...pList];
     persistP(next);
@@ -68,6 +145,35 @@ export default function Admin(){
     const next = !isAdmin;
     setIsAdmin(next);
     localStorage.setItem("motorkita_admin", String(next));
+  };
+
+  const handleDeletePart = async (idOrSlug: string)=>{
+    if (!confirm("Hapus part ini?")) return;
+    if (isSupabaseConfigured() && isAdmin) {
+      try { setList(await deletePartSupabase(idOrSlug)); return; } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
+    const next=list.filter(x=>x.id!==idOrSlug && x.slug!==idOrSlug); setList(next); savePartsMock(next);
+  };
+  const handleDeleteW = async (idOrSlug: string)=>{
+    if (!confirm("Hapus bengkel?")) return;
+    if (isSupabaseConfigured() && isAdmin) {
+      try { setWList(await deleteWorkshopSupabase(idOrSlug)); return; } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
+    const n=wList.filter(x=>x.id!==idOrSlug && x.slug!==idOrSlug); setWList(n); saveWorkshopsMock(n);
+  };
+  const handleDeleteA = async (idOrSlug: string)=>{
+    if (!confirm("Hapus artikel?")) return;
+    if (isSupabaseConfigured() && isAdmin) {
+      try { setAList(await deleteArticleSupabase(idOrSlug)); return; } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
+    const n=aList.filter(x=>x.id!==idOrSlug && x.slug!==idOrSlug); setAList(n); saveArticlesMock(n);
+  };
+  const handleDeleteP = async (idOrSlug: string)=>{
+    if (!confirm("Hapus masalah?")) return;
+    if (isSupabaseConfigured() && isAdmin) {
+      try { setPList(await deleteProblemSupabase(idOrSlug)); return; } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); return; }
+    }
+    const n=pList.filter(x=>x.id!==idOrSlug && x.slug!==idOrSlug); setPList(n); saveProblemsMock(n);
   };
 
   const cats = ["Semua", ...Array.from(new Set(seed.map(p=>p.category)))];
@@ -82,12 +188,24 @@ export default function Admin(){
       <div className="flex flex-wrap justify-between gap-3 items-start">
         <div>
           <h1 className="text-2xl font-black tracking-tight">CMS ADMIN — MOTORKITA</h1>
-          <p className="text-sm text-neutral-600">Mock sekarang (localStorage) — nanti swap <code className="bg-neutral-100 px-1 rounded">partsRepo.ts</code> ke Supabase. Foto pakai URL dulu, nanti upload.</p>
+          <p className="text-sm text-neutral-600">
+            {isSupabaseConfigured() ? <>Supabase aktif — {adminEmail ? <>login sebagai <b>{adminEmail}</b>{adminChecked && isAdmin ? " (admin)" : adminChecked ? " (bukan admin)" : ""}</> : "belum login"}. {isAdmin ? "CRUD Supabase aktif via RLS." : "Butuh role admin."}</> : <>Mock sekarang (localStorage) — nanti swap <code className="bg-neutral-100 px-1 rounded">partsRepo.ts</code> ke Supabase.</>}
+          </p>
+          {isSupabaseConfigured() && adminChecked && !isAdmin && adminEmail && (
+            <p className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">
+              Akun <b>{adminEmail}</b> belum admin. Jalankan di SQL Editor: <code className="bg-white px-1 rounded">update profiles set role='admin' where id = (select id from auth.users where email='{adminEmail}')</code> lalu refresh.
+            </p>
+          )}
+          {isSupabaseConfigured() && adminChecked && !adminEmail && (
+            <p className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">
+              Belum login — <Link href="/login" className="underline font-bold">Masuk</Link> dulu, lalu daftar & set role admin via SQL di atas.
+            </p>
+          )}
         </div>
-        <button onClick={toggleAdmin} className={`h-9 px-4 rounded-full text-xs font-black border ${isAdmin?"bg-green-600 text-white border-green-600":"bg-white border-[#0A0A0A]/15"}`}>{isAdmin ? "✓ Admin Aktif" : "Masuk sebagai Admin"}</button>
+        <button onClick={toggleAdmin} className={`h-9 px-4 rounded-full text-xs font-black border ${isAdmin?"bg-green-600 text-white border-green-600":"bg-white border-[#0A0A0A]/15"}`}>{isAdmin ? "✓ Admin Aktif" : "Masuk sebagai Admin (mock)"}</button>
       </div>
 
-      {!isAdmin && <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">Klik <b>Masuk sebagai Admin</b> untuk aktifkan tombol tambah/edit/hapus (mock guard). Nanti diganti Supabase Auth + RLS `profiles.role='admin'`.</div>}
+      {!isAdmin && !isSupabaseConfigured() && <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">Klik <b>Masuk sebagai Admin</b> untuk aktifkan tombol tambah/edit/hapus (mock guard). Nanti diganti Supabase Auth + RLS `profiles.role='admin'`.</div>}
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {TABS.map(t=>(
@@ -123,7 +241,7 @@ export default function Admin(){
                     <td className="p-2 text-xs whitespace-nowrap">Rp {p.harga_min.toLocaleString("id-ID")}</td>
                     <td className="p-2 flex gap-1">
                       <button disabled={!isAdmin} onClick={()=>{setEditingPart(p); setShowForm("part");}} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-[#0A0A0A] hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Edit</button>
-                      <button disabled={!isAdmin} onClick={()=>{ if(!confirm("Hapus part ini?")) return; const next=list.filter(x=>x.id!==p.id); setList(next); savePartsMock(next); }} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white hover:border-red-600":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
+                      <button disabled={!isAdmin} onClick={()=> handleDeletePart(p.slug || p.id)} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white hover:border-red-600":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
                     </td>
                   </tr>
                 ))}
@@ -151,7 +269,7 @@ export default function Admin(){
                 <span className="truncate pr-2"><b>{w.name}</b> <span className="text-xs text-neutral-500">— {w.kecamatan} • {w.jam_operasional} • {w.layanan.slice(0,2).join(", ")}</span></span>
                 <span className="flex gap-1 shrink-0">
                   <button disabled={!isAdmin} onClick={()=>{setEditingW(w); setShowForm("bengkel");}} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-[#0A0A0A] hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Edit</button>
-                  <button disabled={!isAdmin} onClick={()=>{ if(!confirm("Hapus bengkel?")) return; const n=wList.filter(x=>x.id!==w.id); setWList(n); saveWorkshopsMock(n); }} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
+                  <button disabled={!isAdmin} onClick={()=> handleDeleteW(w.slug || w.id)} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
                 </span>
               </li>
             ))}
@@ -172,7 +290,7 @@ export default function Admin(){
                 <span className="truncate pr-2">{a.title.slice(0,48)} <span className="text-xs text-neutral-500">— {a.slug}</span></span>
                 <span className="flex gap-1 shrink-0">
                   <button disabled={!isAdmin} onClick={()=>{setEditingA(a); setShowForm("artikel");}} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-[#0A0A0A] hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Edit</button>
-                  <button disabled={!isAdmin} onClick={()=>{ if(!confirm("Hapus artikel?")) return; const n=aList.filter(x=>x.id!==a.id); setAList(n); saveArticlesMock(n); }} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
+                  <button disabled={!isAdmin} onClick={()=> handleDeleteA(a.slug || a.id)} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
                 </span>
               </li>
             ))}
@@ -193,7 +311,7 @@ export default function Admin(){
                 <span className="truncate pr-2">{m.title} <span className={`text-xs px-1 rounded ${m.is_emergency?"bg-amber-100 text-amber-900":"bg-neutral-100"}`}>{m.is_emergency?"darurat":"biasa"}</span> <span className="text-xs text-neutral-500">— {m.category}</span></span>
                 <span className="flex gap-1 shrink-0">
                   <button disabled={!isAdmin} onClick={()=>{setEditingP(m); setShowForm("masalah");}} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-[#0A0A0A] hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Edit</button>
-                  <button disabled={!isAdmin} onClick={()=>{ if(!confirm("Hapus masalah?")) return; const n=pList.filter(x=>x.id!==m.id); setPList(n); saveProblemsMock(n); }} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
+                  <button disabled={!isAdmin} onClick={()=> handleDeleteP(m.slug || m.id)} className={`h-7 px-2 rounded-full text-xs font-bold border ${isAdmin?"bg-white hover:bg-red-600 hover:text-white":"bg-neutral-100 text-neutral-400"}`}>Hapus</button>
                 </span>
               </li>
             ))}

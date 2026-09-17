@@ -42,6 +42,49 @@ export function slugify(s: string){
   return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 }
 
-// untuk nanti ganti ke supabase: cukup ganti isi file ini jadi supabase.from('parts') — interface tetap
-export const partsRepo = { getPartsMock, savePartsMock, addPartMock, updatePartMock, deletePartMock, slugify };
+// Supabase-ready: pakai helpers async jika env diset, fallback ke mock localStorage saat dev tanpa env.
+// Server components bisa pakai fetchParts() dari @/lib/supabase/queries; client components pakai helpers di bawah.
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase";
+
+export async function fetchPartsSupabase(): Promise<Part[]> {
+  if (!isSupabaseConfigured()) return getPartsMock();
+  const supabase = createClient();
+  const { data, error } = await supabase.from("parts").select("*").order("created_at", { ascending: false });
+  if (error || !data) return getPartsMock();
+  return data as unknown as Part[];
+}
+
+export async function upsertPartSupabase(p: Part) {
+  if (!isSupabaseConfigured()) {
+    const exists = getPartsMock().find((x) => x.id === p.id);
+    const next = exists ? getPartsMock().map((x) => (x.id === p.id ? p : x)) : [p, ...getPartsMock()];
+    savePartsMock(next);
+    return next;
+  }
+  const supabase = createClient();
+  const { error } = await supabase.from("parts").upsert({
+    slug: p.slug, category: p.category, brand: p.brand, name: p.name,
+    harga_min: p.harga_min, harga_max: p.harga_max, satuan: p.satuan,
+    cover_url: p.cover_url, specs: p.specs, keunggulan: p.keunggulan,
+    cocok_motor: p.cocok_motor, interval_km: p.interval_km, deskripsi: p.deskripsi,
+    bengkel_ids: p.bengkel_ids,
+  }, { onConflict: "slug" });
+  if (error) throw error;
+  return fetchPartsSupabase();
+}
+
+export async function deletePartSupabase(idOrSlug: string) {
+  if (!isSupabaseConfigured()) return deletePartMock(idOrSlug);
+  const supabase = createClient();
+  // coba by slug dulu, lalu id
+  let { error } = await supabase.from("parts").delete().eq("slug", idOrSlug);
+  if (error) {
+    const r2 = await supabase.from("parts").delete().eq("id", idOrSlug);
+    if (r2.error) throw r2.error;
+  }
+  return fetchPartsSupabase();
+}
+
+export const partsRepo = { getPartsMock, savePartsMock, addPartMock, updatePartMock, deletePartMock, slugify, fetchPartsSupabase, upsertPartSupabase, deletePartSupabase };
 export type { PartCategory };

@@ -33,7 +33,7 @@ create table if not exists articles (
   created_at timestamptz default now()
 );
 
--- workshops
+-- workshops (maps_url preferred, lat/lng kept for map distance but optional)
 create table if not exists workshops (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -42,6 +42,7 @@ create table if not exists workshops (
   kecamatan text,
   lat double precision,
   lng double precision,
+  maps_url text,
   jam_operasional text,
   layanan text[],
   kontak text,
@@ -49,6 +50,8 @@ create table if not exists workshops (
   rating numeric default 4.5,
   created_at timestamptz default now()
 );
+-- add maps_url if upgrading existing DB
+alter table workshops add column if not exists maps_url text;
 
 -- services
 create table if not exists services (
@@ -104,12 +107,19 @@ create table if not exists maintenance_records (
   created_at timestamptz default now()
 );
 
--- bookmarks
+-- bookmarks (artikel)
 create table if not exists bookmarks (
   user_id uuid references auth.users(id) on delete cascade,
   article_id uuid references articles(id) on delete cascade,
   created_at timestamptz default now(),
   primary key (user_id, article_id)
+);
+-- bookmarks bengkel (workshop)
+create table if not exists workshop_bookmarks (
+  user_id uuid references auth.users(id) on delete cascade,
+  workshop_id uuid references workshops(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (user_id, workshop_id)
 );
 
 -- motor_problems (merged emergency_guides)
@@ -125,31 +135,99 @@ create table if not exists motor_problems (
   created_at timestamptz default now()
 );
 
+-- parts (oli & sparepart — mirrors src/lib/data/parts.ts)
+create table if not exists parts (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  category text not null check (category in ('oli-mesin','oli-gardan','oli-samping','cvt','ban','busi','filter-udara','rem','kampas-rem','aki','rantai','kelistrikan')),
+  brand text not null,
+  name text not null,
+  harga_min int not null,
+  harga_max int not null,
+  satuan text,
+  cover_url text,
+  specs jsonb default '{}'::jsonb,
+  keunggulan text[],
+  cocok_motor text[],
+  interval_km int,
+  interval_bulan int,
+  deskripsi text,
+  bengkel_ids text[],
+  created_at timestamptz default now()
+);
+
 -- RLS
 alter table profiles enable row level security;
+alter table categories enable row level security;
+alter table articles enable row level security;
+alter table workshops enable row level security;
+alter table motor_problems enable row level security;
+alter table maintenance_rules enable row level security;
+alter table parts enable row level security;
 alter table motorcycles enable row level security;
 alter table maintenance_records enable row level security;
 alter table bookmarks enable row level security;
+alter table workshop_bookmarks enable row level security;
 
--- public read for catalog
+-- public read for catalog (idempotent)
+drop policy if exists "public read categories" on categories;
+drop policy if exists "public read articles" on articles;
+drop policy if exists "public read workshops" on workshops;
+drop policy if exists "public read problems" on motor_problems;
+drop policy if exists "public read rules" on maintenance_rules;
+drop policy if exists "public read parts" on parts;
 create policy "public read categories" on categories for select using (true);
 create policy "public read articles" on articles for select using (true);
 create policy "public read workshops" on workshops for select using (true);
 create policy "public read problems" on motor_problems for select using (true);
 create policy "public read rules" on maintenance_rules for select using (true);
+create policy "public read parts" on parts for select using (true);
+-- admin write untuk katalog (via service_role bypass RLS; policy ini untuk admin via anon jika sudah login)
+drop policy if exists "admin write parts" on parts;
+create policy "admin write parts" on parts for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
+drop policy if exists "admin write workshops" on workshops;
+create policy "admin write workshops" on workshops for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
+drop policy if exists "admin write articles" on articles;
+create policy "admin write articles" on articles for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
 
--- private per user
-create policy "own motorcycles" on motorcycles for all using (auth.uid() = user_id);
-create policy "own bookmarks" on bookmarks for all using (auth.uid() = user_id);
+-- private per user (idempotent)
+drop policy if exists "own motorcycles" on motorcycles;
+drop policy if exists "own bookmarks" on bookmarks;
+drop policy if exists "own workshop bookmarks" on workshop_bookmarks;
+drop policy if exists "own records" on maintenance_records;
+drop policy if exists "own profile" on profiles;
+create policy "own motorcycles" on motorcycles for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "own bookmarks" on bookmarks for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "own workshop bookmarks" on workshop_bookmarks for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "own profile" on profiles for all using (auth.uid() = id) with check (auth.uid() = id);
 -- maintenance_records via motorcycle ownership
 create policy "own records" on maintenance_records for all using (
   exists (select 1 from motorcycles m where m.id = motorcycle_id and m.user_id = auth.uid())
+) with check (
+  exists (select 1 from motorcycles m where m.id = motorcycle_id and m.user_id = auth.uid())
 );
+
+-- storage bucket untuk cover/foto (buat via Dashboard > Storage > New bucket: covers, public)
+-- insert into storage.buckets (id, name, public) values ('covers','covers', true) on conflict do nothing;
+-- policy storage: allow public read, admin write handled by service_role
 
 -- trigger new user -> profile
 create or replace function handle_new_user() returns trigger as $$
 begin
-  insert into public.profiles (id, name, role) values (new.id, new.email, 'user');
+  insert into public.profiles (id, name, role) values (new.id, coalesce(new.raw_user_meta_data->>'name', new.email), 'user')
+  on conflict (id) do nothing;
   return new;
 end; $$ language plpgsql security definer;
 drop trigger if exists on_auth_user_created on auth.users;

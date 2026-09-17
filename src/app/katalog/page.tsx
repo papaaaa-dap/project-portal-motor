@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { parts } from "@/lib/data/parts";
-import { workshops } from "@/lib/data/mocks";
+import { fetchParts, fetchWorkshops } from "@/lib/supabase/queries";
+import { parts as fallbackParts } from "@/lib/data/parts";
+import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 import type { PartCategory } from "@/lib/types";
 
 const cats: { slug: PartCategory; label: string }[] = [
@@ -24,7 +25,11 @@ export default async function KatalogPage({searchParams}:{searchParams: Promise<
   const sp = await searchParams;
   const cat = sp.cat as PartCategory | undefined;
   const q = sp.q?.toLowerCase() || "";
-  let list = [...parts];
+  const [parts, workshops] = await Promise.all([fetchParts(), fetchWorkshops()]);
+  // fallback length guard — jika Supabase kosong, queries sudah return mock
+  const source = parts.length ? parts : fallbackParts;
+  const ws = workshops.length ? workshops : fallbackWorkshops;
+  let list = [...source];
   if(cat) list = list.filter(p=> p.category===cat);
   if(q) list = list.filter(p=> p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.deskripsi.toLowerCase().includes(q) || Object.values(p.specs).join(" ").toLowerCase().includes(q));
 
@@ -35,9 +40,9 @@ export default async function KatalogPage({searchParams}:{searchParams: Promise<
       <p className="text-sm text-neutral-600 mt-1">Part only — jasa bengkel terpisah ±30-120rb. Harga real Surabaya • Update April 2026 • Tap kartu untuk spek & bengkel yang jual.</p>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-thin flex-nowrap">
-        <Link href="/katalog" className={`shrink-0 px-3 py-1.5 rounded-full text-sm border font-medium ${!cat?"bg-[#0A0A0A] text-white border-[#0A0A0A]":"bg-white hover:bg-neutral-100"}`}>Semua ({parts.length})</Link>
+        <Link href="/katalog" className={`shrink-0 px-3 py-1.5 rounded-full text-sm border font-medium ${!cat?"bg-[#0A0A0A] text-white border-[#0A0A0A]":"bg-white hover:bg-neutral-100"}`}>Semua ({source.length})</Link>
         {cats.map(c=>{
-          const cnt = parts.filter(p=>p.category===c.slug).length;
+          const cnt = source.filter(p=>p.category===c.slug).length;
           const active = cat===c.slug;
           return <Link key={c.slug} href={`/katalog?cat=${c.slug}`} className={`shrink-0 px-3 py-1.5 rounded-full text-sm border ${active?"bg-[#0A0A0A] text-white border-[#0A0A0A]":"bg-white hover:bg-neutral-100"}`}>{c.label} ({cnt})</Link>;
         })}
@@ -53,7 +58,7 @@ export default async function KatalogPage({searchParams}:{searchParams: Promise<
 
       <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {list.map(p=>{
-          const bengkelNames = p.bengkel_ids.map(id=> workshops.find(w=>w.id===id)?.name).filter(Boolean).slice(0,2);
+          const bengkelNames = p.bengkel_ids.map(id=> ws.find(w=>w.id===id)?.name).filter(Boolean).slice(0,2);
           const specKeys = Object.keys(p.specs).slice(0,2);
           return (
             <Link key={p.id} href={`/katalog/${p.slug}`} className="group bg-white border border-[#0A0A0A] rounded-[16px] overflow-hidden flex flex-col hover:shadow-[4px_4px_0_#0A0A0A] hover:-translate-y-[1px] transition-all">

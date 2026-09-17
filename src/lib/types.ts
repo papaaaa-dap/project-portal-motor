@@ -24,8 +24,9 @@ export type Workshop = {
   slug: string;
   address: string;
   kecamatan: string;
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
+  maps_url?: string;
   jam_operasional: string;
   layanan: string[];
   kontak: string;

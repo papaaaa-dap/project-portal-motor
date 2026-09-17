@@ -1,12 +1,15 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import SearchBar from "@/components/SearchBar";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 const nav = [
   { href: "/katalog", label: "KATALOG" },
   { href: "/bengkel", label: "BENGKEL" },
+  { href: "/tersimpan", label: "TERSIMPAN" },
   { href: "/cek-masalah", label: "CEK" },
   { href: "/panduan-darurat", label: "DARURAT" },
   { href: "/edukasi", label: "EDUKASI" },
@@ -40,7 +43,41 @@ function ThemeToggle(){
 
 export default function Navbar() {
   const path = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      try {
+        const raw = localStorage.getItem("motorkita_mock_user");
+        if (raw) setUserEmail((JSON.parse(raw) as { email: string }).email);
+      } catch {}
+      return;
+    }
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUserEmail(data.user?.email ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const logout = async () => {
+    if (!isSupabaseConfigured()) {
+      localStorage.removeItem("motorkita_mock_user");
+      setUserEmail(null);
+      router.refresh();
+      return;
+    }
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    // fallback form POST untuk hapus cookie server
+    await fetch("/auth/signout", { method: "POST" });
+    setUserEmail(null);
+    router.push("/");
+    router.refresh();
+  };
   return (
     <header className="sticky top-0 z-50 bg-[var(--background)] border-b border-[var(--border)]">
       <div className="h-[6px] hazard-stripe w-full" aria-hidden />
@@ -76,7 +113,14 @@ export default function Navbar() {
             <span className="h-2 w-2 rounded-full bg-white dark:bg-black animate-pulse hidden sm:block" />
             MOTOR SAYA
           </Link>
-          <Link href="/login" className="mono text-[12px] font-bold tracking-[0.06em] px-3 py-1.5 rounded-full border border-[#0A0A0A]/15 dark:border-white/15 hover:border-[#0A0A0A] dark:hover:border-white transition">MASUK</Link>
+          {userEmail ? (
+            <>
+              <span className="hidden sm:inline mono text-[11px] font-bold max-w-[140px] truncate px-2">{userEmail}</span>
+              <button onClick={logout} className="mono text-[12px] font-bold tracking-[0.06em] px-3 py-1.5 rounded-full border border-[#0A0A0A]/15 dark:border-white/15 hover:bg-[#0A0A0A] hover:text-white dark:hover:bg-white dark:hover:text-black transition">KELUAR</button>
+            </>
+          ) : (
+            <Link href="/login" className="mono text-[12px] font-bold tracking-[0.06em] px-3 py-1.5 rounded-full border border-[#0A0A0A]/15 dark:border-white/15 hover:border-[#0A0A0A] dark:hover:border-white transition">MASUK</Link>
+          )}
           <button onClick={()=>setOpen(v=>!v)} className="lg:hidden h-9 w-9 grid place-items-center rounded-[8px] bg-[#0A0A0A] dark:bg-white text-white dark:text-black"><span className="mono text-[12px]">{open ? "✕" : "≡"}</span></button>
         </div>
       </div>
