@@ -9,9 +9,6 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#0A0A0A",
     theme_color: "#0A0A0A",
-    icons: [
-      { src: "/logo-motorkita-white.png", sizes: "any", type: "image/png" },
-      { src: "/logo-motorkita.jpeg", sizes: "any", type: "image/jpeg" },
-    ],
+    icons: [{ src: "/logo-motorkita.png", sizes: "any", type: "image/png" }],
   };
 }

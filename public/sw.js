@@ -10,7 +10,7 @@ const CORE = [
   "/motor2.jpeg",
   "/motor3.jpeg",
   "/motor4.jpeg",
-  "/logo-motorkita.jpeg",
+  "/logo-motorkita.png",
 ];
 
 self.addEventListener("install", (e) => {

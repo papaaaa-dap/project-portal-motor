@@ -84,7 +84,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-[1280px] px-4 sm:px-6 flex h-[64px] items-center justify-between gap-4">
         <Link href="/" className="flex items-center shrink-0">
           <img
-            src="/logo-motorkita.jpeg"
+            src="/logo-motorkita.png"
             alt="Motorkita"
             width={160}
             height={44}

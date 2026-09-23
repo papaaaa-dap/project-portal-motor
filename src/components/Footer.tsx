@@ -8,7 +8,7 @@ export default function Footer(){
           <div>
             <div className="flex items-center gap-2">
               <img
-                src="/logo-motorkita.jpeg"
+                src="/logo-motorkita.png"
                 alt="Motorkita"
                 width={140}
                 height={38}
