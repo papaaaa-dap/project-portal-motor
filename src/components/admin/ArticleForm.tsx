@@ -1,13 +1,18 @@
 "use client";
-import { useState } from "react";
-import type { Article } from "@/lib/types";
-import { categories } from "@/lib/data/mocks";
+import { useEffect, useState } from "react";
+import type { Article, Category } from "@/lib/types";
+import { categories as seedCategories } from "@/lib/data/mocks";
+import { fetchCategoriesSupabase } from "@/lib/repo/articlesRepo";
 import { slugify } from "@/lib/repo/articlesRepo";
 import CoverUpload from "@/components/admin/CoverUpload";
 
 export default function ArticleForm({ onSave, onClose, initial }: { onSave:(a:Article)=>void; onClose:()=>void; initial?: Article|null }){
   const [title, setTitle] = useState(initial?.title||"");
-  const [catId, setCatId] = useState(initial?.category_id || categories[0].id);
+  const [categories, setCategories] = useState<Category[]>(seedCategories);
+  const [catId, setCatId] = useState(initial?.category_id || seedCategories[0].id);
+  useEffect(()=>{
+    fetchCategoriesSupabase().then((live)=>{ if(live.length) setCategories(live); }).catch(()=>{});
+  },[]);
   const [excerpt, setExcerpt] = useState(initial?.excerpt||"");
   const [content, setContent] = useState(initial?.content||"");
   const [cover, setCover] = useState(initial?.cover_url||"");

@@ -1,12 +1,27 @@
 import Link from "next/link";
-import { searchAll, categories } from "@/lib/data/mocks";
+import { fetchParts, fetchArticles, fetchWorkshops, fetchProblems, fetchCategories } from "@/lib/supabase/queries";
+import { articles as fallbackArticles, workshops as fallbackWorkshops, motorProblems as fallbackProblems, categories as fallbackCategories } from "@/lib/data/mocks";
+import { parts as fallbackParts } from "@/lib/data/parts";
 import { ArticleCard, WorkshopCard } from "@/components/ui/Card";
-import { parts } from "@/lib/data/parts";
 export default async function Search({searchParams}:{searchParams: Promise<{q?:string}>}){
   const sp=await searchParams;
   const q = sp.q||"";
-  const res = q? searchAll(q) : {art:[], bengkel:[], masalah:[]};
-  const partRes = q ? parts.filter(p=> p.name.toLowerCase().includes(q.toLowerCase()) || p.brand.toLowerCase().includes(q.toLowerCase()) || p.deskripsi.toLowerCase().includes(q.toLowerCase())) : [];
+  const [liveParts, liveArticles, liveWorkshops, liveProblems, liveCategories] = await Promise.all([
+    fetchParts().catch(() => []), fetchArticles().catch(() => []), fetchWorkshops().catch(() => []),
+    fetchProblems().catch(() => []), fetchCategories().catch(() => []),
+  ]);
+  const parts = liveParts.length ? liveParts : fallbackParts;
+  const articles = liveArticles.length ? liveArticles : fallbackArticles;
+  const workshops = liveWorkshops.length ? liveWorkshops : fallbackWorkshops;
+  const motorProblems = liveProblems.length ? liveProblems : fallbackProblems;
+  const categories = liveCategories.length ? liveCategories : fallbackCategories;
+  const ql = q.toLowerCase();
+  const res = q ? {
+    art: articles.filter(a => a.title.toLowerCase().includes(ql) || (a.excerpt||"").toLowerCase().includes(ql)),
+    bengkel: workshops.filter(w => w.name.toLowerCase().includes(ql) || w.layanan.some(l => l.toLowerCase().includes(ql)) || w.kecamatan.toLowerCase().includes(ql)),
+    masalah: motorProblems.filter(m => m.title.toLowerCase().includes(ql)),
+  } : {art:[], bengkel:[], masalah:[]};
+  const partRes = q ? parts.filter(p=> p.name.toLowerCase().includes(ql) || p.brand.toLowerCase().includes(ql) || p.deskripsi.toLowerCase().includes(ql)) : [];
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       <h1 className="text-2xl font-bold">Search</h1>

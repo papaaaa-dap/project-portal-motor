@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { parts as mockParts } from "@/lib/data/parts";
 import { articles as mockArticles, workshops as mockWorkshops, motorProblems as mockProblems, maintenanceRules as mockRules } from "@/lib/data/mocks";
-import type { Part, Article, Workshop, MotorProblem, MaintenanceRule } from "@/lib/types";
+import type { Part, Article, Workshop, MotorProblem, MaintenanceRule, Category } from "@/lib/types";
+import { categories as mockCategories } from "@/lib/data/mocks";
 
 function isConfigured() {
   return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -78,6 +79,14 @@ export async function fetchRules(): Promise<MaintenanceRule[]> {
   const { data, error } = await supabase.from("maintenance_rules").select("*");
   if (error) return [];
   return (data as MaintenanceRule[]) ?? [];
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const supabase = await getSupabaseServer();
+  if (!supabase) return mockCategories;
+  const { data, error } = await supabase.from("categories").select("*").order("name");
+  if (error || !data) return mockCategories;
+  return (data as Category[]) ?? mockCategories;
 }
 
 // Motorcycles per user — requires auth; fallback ke null jika belum login / belum configured

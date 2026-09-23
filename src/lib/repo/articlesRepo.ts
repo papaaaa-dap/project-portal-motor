@@ -1,6 +1,6 @@
 "use client";
-import type { Article } from "@/lib/types";
-import { articles as seed } from "@/lib/data/mocks";
+import type { Article, Category } from "@/lib/types";
+import { articles as seed, categories as seedCategories } from "@/lib/data/mocks";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
@@ -18,6 +18,14 @@ export async function fetchArticlesSupabase(): Promise<Article[]> {
   const { data, error } = await sb.from("articles").select("*").order("created_at", { ascending: false });
   if (error || !data) return getArticlesMock();
   return data as Article[];
+}
+
+export async function fetchCategoriesSupabase(): Promise<Category[]> {
+  if (!isSupabaseConfigured()) return seedCategories;
+  const sb = createClient();
+  const { data, error } = await sb.from("categories").select("*").order("name");
+  if (error || !data) return seedCategories;
+  return data as Category[];
 }
 export async function upsertArticleSupabase(a: Article) {
   if (!isSupabaseConfigured()) {

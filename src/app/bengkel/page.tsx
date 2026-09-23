@@ -1,7 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { workshops } from "@/lib/data/mocks";
+import { workshops as seedWorkshops } from "@/lib/data/mocks";
+import { fetchWorkshopsSupabase } from "@/lib/repo/workshopsRepo";
+import type { Workshop } from "@/lib/types";
 import { WorkshopCard } from "@/components/ui/Card";
 import LeafletMap from "@/components/Map";
 import { mapsUrlForWorkshop } from "@/lib/maps";
@@ -21,6 +23,11 @@ export default function BengkelPage(){
   const [watching, setWatching]=useState(false);
   const [watchId, setWatchId]=useState<number | null>(null);
   const [err, setErr]=useState("");
+  const [workshops, setWorkshops]=useState<Workshop[]>(seedWorkshops);
+
+  useEffect(()=>{
+    fetchWorkshopsSupabase().then((live)=>{ if(live.length) setWorkshops(live); }).catch(()=>{});
+  },[]);
 
   const handleLoc=()=>{
     if(!navigator.geolocation){ setErr("Browser tidak mendukung lokasi"); return;}
@@ -49,7 +56,7 @@ export default function BengkelPage(){
       }).sort((a: unknown, b: unknown)=> (a as { _d: number })._d - (b as { _d: number })._d);
     }
     return l;
-  },[filter,q,loc,openOnly]);
+  },[filter,q,loc,openOnly,workshops]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">

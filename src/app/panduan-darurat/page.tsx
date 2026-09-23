@@ -1,12 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { motorProblems } from "@/lib/data/mocks";
+import { fetchProblems } from "@/lib/supabase/queries";
+import { motorProblems as fallbackProblems } from "@/lib/data/mocks";
 
 export const metadata: Metadata = {
   title: "Panduan Darurat — Mogok, Ban Bocor, Overheat",
   description: "Langkah 3-tap saat mogok di jalan: ban bocor, rem blong, overheat, kehabisan bensin. Bisa dibaca offline setelah dibuka sekali.",
 };
-export default function Darurat(){
+export default async function Darurat(){
+  const live = await fetchProblems().catch(() => []);
+  const motorProblems = live.length ? live : fallbackProblems;
   const list = motorProblems.filter(p=>p.is_emergency);
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">

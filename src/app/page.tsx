@@ -1,12 +1,21 @@
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import { ArticleCard, WorkshopCard, CategoryCard } from "@/components/ui/Card";
-import { workshops, motorProblems } from "@/lib/data/mocks";
-import { parts } from "@/lib/data/parts";
+import { fetchParts, fetchWorkshops, fetchProblems } from "@/lib/supabase/queries";
+import { workshops as fallbackWorkshops, motorProblems as fallbackProblems } from "@/lib/data/mocks";
+import { parts as fallbackParts } from "@/lib/data/parts";
 import { faqs } from "@/lib/data/oli";
 import FaqAccordion from "@/components/FaqAccordion";
 
-export default function HomePage(){
+export default async function HomePage(){
+  const [liveParts, liveWorkshops, liveProblems] = await Promise.all([
+    fetchParts().catch(() => []),
+    fetchWorkshops().catch(() => []),
+    fetchProblems().catch(() => []),
+  ]);
+  const parts = liveParts.length ? liveParts : fallbackParts;
+  const workshops = liveWorkshops.length ? liveWorkshops : fallbackWorkshops;
+  const motorProblems = liveProblems.length ? liveProblems : fallbackProblems;
   return (
     <div className="bg-white">
       {/* HERO - Bespoke Arch Reference (restore) */}

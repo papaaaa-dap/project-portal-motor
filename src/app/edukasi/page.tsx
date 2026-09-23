@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { articles, categories } from "@/lib/data/mocks";
+import { fetchArticles, fetchCategories } from "@/lib/supabase/queries";
+import { articles as fallbackArticles, categories as fallbackCategories } from "@/lib/data/mocks";
 import { ArticleCard } from "@/components/ui/Card";
 import FaqAccordion from "@/components/FaqAccordion";
 import { faqs } from "@/lib/data/oli";
 export default async function Edukasi({searchParams}:{searchParams: Promise<{cat?:string}>}){
   const sp=await searchParams;
   const cat = sp.cat;
+  const [liveArticles, liveCategories] = await Promise.all([fetchArticles().catch(() => []), fetchCategories().catch(() => [])]);
+  const articles = liveArticles.length ? liveArticles : fallbackArticles;
+  const categories = liveCategories.length ? liveCategories : fallbackCategories;
   let list = articles.filter(a=> categories.find(c=>c.id===a.category_id)?.type==="edukasi");
   if(cat) list = list.filter(a=> categories.find(c=>c.id===a.category_id)?.slug===cat);
   return (

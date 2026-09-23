@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { workshops, articles } from "@/lib/data/mocks";
+import { workshops as seedWorkshops, articles as seedArticles } from "@/lib/data/mocks";
+import { fetchWorkshopsSupabase } from "@/lib/repo/workshopsRepo";
+import { fetchArticlesSupabase } from "@/lib/repo/articlesRepo";
+import type { Article, Workshop } from "@/lib/types";
 import { WorkshopCard, ArticleCard } from "@/components/ui/Card";
 import { getBookmarksMock, fetchBookmarks } from "@/lib/repo/bookmarksRepo";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -10,14 +13,22 @@ export default function TersimpanPage(){
   const [aIds, setAIds]=useState<string[]>([]);
   const [wIds, setWIds]=useState<string[]>([]);
   const [tab, setTab]=useState<"bengkel"|"artikel">("bengkel");
+  const [articles, setArticles]=useState<Article[]>(seedArticles);
+  const [workshops, setWorkshops]=useState<Workshop[]>(seedWorkshops);
 
   useEffect(()=>{
     const load = async ()=>{
+      const [a, w] = await Promise.all([
+        fetchArticlesSupabase().catch(() => seedArticles),
+        fetchWorkshopsSupabase().catch(() => seedWorkshops),
+      ]);
+      if (a.length) setArticles(a);
+      if (w.length) setWorkshops(w);
       if(isSupabaseConfigured()){
-        try{ const { articles: a, workshops: w } = await fetchBookmarks(); setAIds(a); setWIds(w); return;}catch{}
+        try{ const { articles: ba, workshops: bw } = await fetchBookmarks(); setAIds(ba); setWIds(bw); return;}catch{}
       }
-      const { articles: a, workshops: w } = getBookmarksMock();
-      setAIds(a); setWIds(w);
+      const { articles: ba, workshops: bw } = getBookmarksMock();
+      setAIds(ba); setWIds(bw);
     };
     load();
     const h = ()=>{ const { articles: a, workshops: w } = getBookmarksMock(); setAIds(a); setWIds(w); };

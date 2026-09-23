@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { maintenanceRules } from "@/lib/data/mocks";
-import { parts } from "@/lib/data/parts";
+import { parts as seedParts } from "@/lib/data/parts";
+import { fetchPartsSupabase } from "@/lib/repo/partsRepo";
+import type { Part } from "@/lib/types";
 import { getMotorSpec } from "@/lib/data/motorSpecs";
 import type { MaintenanceRecord, MaintenanceRule, Motorcycle } from "@/lib/types";
 import Link from "next/link";
@@ -46,7 +48,7 @@ function computeReminders(m: Motorcycle, recs: MaintenanceRecord[]): Reminder[] 
   }).sort((a, b) => Math.min(a.sisaKm / a.rule.interval_km, a.sisaHari / a.rule.interval_days) - Math.min(b.sisaKm / b.rule.interval_km, b.sisaHari / b.rule.interval_days));
 }
 
-function getOliRekom(m: Motorcycle){
+function getOliRekom(m: Motorcycle, parts: Part[]){
   const oli = parts.filter(p=> p.category==="oli-mesin");
   const exact = oli.filter(o=> o.cocok_motor.some(cm=> {
     const full = `${m.brand} ${m.model}`.toLowerCase();
@@ -75,6 +77,11 @@ export default function MotorSaya(){
   const [msg, setMsg]=useState("");
   const [openServis, setOpenServis]=useState<string | null>(null);
   const [sForm, setSForm]=useState({type:"Ganti Oli Mesin", date:new Date().toISOString().slice(0,10), km:0, cost:"", notes:""});
+  const [allParts, setAllParts]=useState<Part[]>(seedParts);
+
+  useEffect(()=>{
+    fetchPartsSupabase().then((live)=>{ if(live.length) setAllParts(live); }).catch(()=>{});
+  },[]);
 
   useEffect(()=>{
     const load = async ()=>{
@@ -205,7 +212,7 @@ export default function MotorSaya(){
           const reminders = computeReminders(m, recs);
           const specs = getMotorSpec(m.brand, m.model) || { oli: "Cek Katalog Oli — belum ada spek presisi, pakai generik", banDepan: "-", banBelakang: "-", aki: "-", busi: "-", foto: "/motor2.jpeg" };
           const isPresisi = !!getMotorSpec(m.brand, m.model);
-          const oliRec = getOliRekom(m);
+          const oliRec = getOliRekom(m, allParts);
           return (
             <div key={m.id} className="bg-white border border-[#0A0A0A]/10 rounded-[16px] overflow-hidden flex flex-col">
               <div className="h-36 bg-[#F2F2F2] relative overflow-hidden">
