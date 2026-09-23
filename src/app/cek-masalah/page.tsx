@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motorProblems } from "@/lib/data/mocks";
+// NOTE: halaman client — metadata statis didefinisikan di layout induk.
 export default function CekMasalah(){
   const [q, setQ]=useState("");
   const [sel, setSel]=useState<string| null>(null);

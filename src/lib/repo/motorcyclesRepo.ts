@@ -58,3 +58,14 @@ export async function deleteMotorcycle(id: string) {
   if (error) throw error;
   return fetchMotorcycles();
 }
+
+export async function touchMotorcycleAfterService(id: string, kilometer: number, service_date: string) {
+  if (!isSupabaseConfigured()) {
+    const list = getMotorcyclesMock().map((x) =>
+      x.id === id ? { ...x, kilometer: Math.max(x.kilometer, kilometer), last_service_date: service_date } : x
+    );
+    saveMotorcyclesMock(list);
+    return list;
+  }
+  return fetchMotorcycles();
+}

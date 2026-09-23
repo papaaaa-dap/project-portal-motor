@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { Workshop } from "@/lib/types";
 import { slugify } from "@/lib/repo/workshopsRepo";
 import { parseGoogleMapsLink } from "@/lib/maps";
+import CoverUpload from "@/components/admin/CoverUpload";
 
 export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:Workshop)=>void; onClose:()=>void; initial?: Workshop|null }){
   const [name, setName] = useState(initial?.name||"");
@@ -30,7 +31,7 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
       lng: parsed.lng ?? initial?.lng,
       maps_url: parsed.maps_url,
       jam_operasional: jam, layanan: layanan.split(",").map(s=>s.trim()).filter(Boolean),
-      kontak: kontak||"031-xxxxxxx", foto_url: foto||"https://images.unsplash.com/photo-1613214149922-f1809c99b414?w=600&q=80",
+      kontak: kontak||"031-xxxxxxx", foto_url: foto||"/motor4.jpeg",
       rating: parseFloat(rating)||4.5
     } as unknown as Workshop & { maps_url: string };
     // warning if lat/lng not extracted
@@ -58,7 +59,7 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
             <label className="text-xs font-bold">Kontak<input value={kontak} onChange={e=>setKontak(e.target.value)} placeholder="031-8281234" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
             <label className="text-xs font-bold">Rating<input type="number" step="0.1" value={rating} onChange={e=>setRating(e.target.value)} className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
           </div>
-          <label className="text-xs font-bold">Foto URL<input value={foto} onChange={e=>setFoto(e.target.value)} placeholder="https://..." className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
+          <CoverUpload value={foto} onChange={setFoto} folder="workshops" label="Foto (upload / URL)" />
           {err && <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-2 rounded-lg">{err}</div>}
           <div className="flex gap-2"><button onClick={submit} className="flex-1 h-10 rounded-full bg-[#0A0A0A] text-white text-sm font-black">{initial?"Simpan":"Simpan Bengkel"}</button><button onClick={onClose} className="h-10 px-6 rounded-full border bg-white text-sm font-bold">Batal</button></div>
         </div>

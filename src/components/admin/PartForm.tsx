@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { Part, PartCategory } from "@/lib/types";
 import { workshops } from "@/lib/data/mocks";
 import { slugify } from "@/lib/repo/partsRepo";
+import CoverUpload from "@/components/admin/CoverUpload";
 
 const cats: { slug: PartCategory; label: string; specs: string[] }[] = [
   { slug:"oli-mesin", label:"Oli Mesin", specs:["SAE","JASO","Base","Untuk"] },
@@ -49,7 +50,7 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
       id: initial?.id || `p-${Date.now()}`,
       slug, category, brand, name,
       harga_min: min, harga_max: max, satuan,
-      cover_url: cover || "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80",
+      cover_url: cover || "/motor3.jpeg",
       specs, keunggulan: keunggulan.split(",").map(s=>s.trim()).filter(Boolean).slice(0,4),
       cocok_motor: cocok.split(",").map(s=>s.trim()).filter(Boolean),
       interval_km: parseInt(interval)||2000, deskripsi: deskripsi || `${brand} ${name} untuk ${category}`,
@@ -66,7 +67,7 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
           <h3 className="font-black">{initial ? "Edit Part" : "Tambah Part Baru"}</h3>
           <button onClick={onClose} className="h-8 w-8 rounded-full border grid place-items-center">✕</button>
         </div>
-        <p className="mono text-[11px] text-neutral-500 mt-1">Foto pakai URL dulu — nanti ganti upload file ke Supabase Storage (field cover_url tetap).</p>
+        <p className="mono text-[11px] text-neutral-500 mt-1">Upload foto ke Supabase Storage, atau tempel URL / kosongkan (= default lokal).</p>
 
         <div className="mt-4 grid gap-3">
           <div className="grid grid-cols-2 gap-2">
@@ -98,8 +99,9 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
 
           <div className="grid grid-cols-2 gap-2">
             <label className="text-xs font-bold">Interval KM<input type="number" value={interval} onChange={e=>setInterval(e.target.value)} className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
-            <label className="text-xs font-bold">Foto URL (nanti upload)<input value={cover} onChange={e=>setCover(e.target.value)} placeholder="https://..." className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
+            <div />
           </div>
+          <CoverUpload value={cover} onChange={setCover} folder="parts" label="Foto (upload / URL)" />
 
           <label className="text-xs font-bold">Deskripsi<textarea value={deskripsi} onChange={e=>setDeskripsi(e.target.value)} rows={2} placeholder="Oli bawaan Honda untuk matic harian..." className="mt-1 w-full border rounded-lg p-3 text-sm font-normal"/></label>
 
@@ -121,7 +123,7 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
             <button onClick={submit} className="flex-1 h-10 rounded-full bg-[#0A0A0A] text-white text-sm font-black">{initial ? "Simpan Perubahan" : "Simpan Part"}</button>
             <button onClick={onClose} className="h-10 px-6 rounded-full border bg-white text-sm font-bold">Batal</button>
           </div>
-          <p className="mono text-[11px] text-neutral-500 text-center">Nanti swap `partsRepo.ts` → Supabase: form ini 90% tetap, cuma `cover_url` jadi upload file.</p>
+          <p className="mono text-[11px] text-neutral-500 text-center">Kosongkan foto = pakai default lokal. Upload butuh Supabase terkonfigurasi.</p>
         </div>
       </div>
     </div>

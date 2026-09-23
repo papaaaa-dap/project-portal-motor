@@ -1,12 +1,32 @@
 import Link from "next/link";
-import { workshops } from "@/lib/data/mocks";
+import type { Metadata } from "next";
+import { fetchWorkshops } from "@/lib/supabase/queries";
+import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 import { mapsUrlForWorkshop } from "@/lib/maps";
 import { getOpenStatus } from "@/lib/openStatus";
 import { waLink, isWa } from "@/lib/wa";
 
+async function getWorkshop(id: string) {
+  const live = await fetchWorkshops().catch(() => []);
+  const source = live.length ? live : fallbackWorkshops;
+  return source.find((x) => x.id === id || (x as unknown as { slug: string }).slug === id) as unknown as {
+    id:string; name:string; address:string; kecamatan:string; lat?:number; lng?:number;
+    maps_url?:string; foto_url:string; rating:number; jam_operasional:string; kontak:string; layanan:string[];
+  } | undefined;
+}
+
+export async function generateMetadata({params}:{params: Promise<{id:string}>}): Promise<Metadata> {
+  const { id } = await params;
+  const w = await getWorkshop(id);
+  if (!w) return { title: "Bengkel tidak ditemukan" };
+  const title = `${w.name} — ${w.kecamatan}`;
+  const description = `${w.address}. Jam: ${w.jam_operasional}. Layanan: ${w.layanan.slice(0, 4).join(", ")}. Rating ${w.rating}.`;
+  return { title, description, openGraph: { title, description, images: [{ url: w.foto_url, alt: w.name }] } };
+}
+
 export default async function Detail({params}:{params: Promise<{id:string}>}){
   const {id}=await params;
-  const w = workshops.find(x=>x.id===id) as unknown as { id:string; name:string; address:string; kecamatan:string; lat?:number; lng?:number; maps_url?:string; foto_url:string; rating:number; jam_operasional:string; kontak:string; layanan:string[] } | undefined;
+  const w = await getWorkshop(id);
   if(!w) return <div className="mx-auto max-w-3xl px-4 py-10">Bengkel tidak ditemukan.</div>;
   const open = getOpenStatus(w.jam_operasional);
   return (

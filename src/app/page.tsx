@@ -31,13 +31,13 @@ export default function HomePage(){
           <div className="relative overflow-hidden" style={{clipPath:"url(#heroCurve)"}}>
             <div className="grid grid-cols-4 gap-[3px] bg-white h-[220px] sm:h-[300px] md:h-[380px] lg:h-[420px]">
               {[
-                "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
-                "https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?w=800&q=80",
-                "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80",
-                "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=800&q=80",
+                "/motor1.jpeg",
+                "/motor2.jpeg",
+                "/motor3.jpeg",
+                "/motor4.jpeg",
               ].map((src,i)=>(
                 <div key={i} className="relative overflow-hidden bg-[#F2F2F2]">
-                  <img src={src} alt="" className="h-full w-full object-cover"/>
+                  <img src={src} alt={`Motor ${i+1}`} className="h-full w-full object-cover" style={i === 0 ? { objectPosition: "70% 60%" } : i === 1 ? { objectPosition: "42% 38%" } : undefined}/>
                   <div className="absolute inset-0 ring-1 ring-inset ring-black/5 pointer-events-none" />
                 </div>
               ))}
@@ -72,7 +72,7 @@ export default function HomePage(){
         <div className="bg-[#FFFFFF] border-b border-[#0A0A0A]/10">
           <div className="mx-auto max-w-[1280px] px-4 sm:px-6 py-3 flex items-center justify-center gap-3 mono text-[11px]">
             <div className="flex -space-x-1">
-              {[1,2,3].map(i=> <img key={i} src={`https://i.pravatar.cc/100?img=${10+i}`} alt="" className="h-7 w-7 rounded-full border-2 border-white object-cover"/>)}
+              {["AR","BD","CT"].map(t=> <span key={t} className="h-7 w-7 rounded-full border-2 border-white bg-[#0A0A0A] text-white mono text-[9px] font-black grid place-items-center">{t}</span>)}
             </div>
             <span className="text-[#717171]"><b className="text-[#0A0A0A]">1.200+</b> pengendara cek motor minggu ini <span className="hidden sm:inline">- Bukan diagnosis bengkel, cek awal untuk ambil keputusan</span></span>
           </div>

@@ -90,3 +90,16 @@ export type Motorcycle = {
   last_service_date: string;
   notes?: string;
 };
+
+export type MaintenanceRecord = {
+  id: string;
+  motorcycle_id: string;
+  service_type: string;
+  kilometer: number;
+  service_date: string;
+  cost?: number | null;
+  notes?: string | null;
+  next_service_km?: number | null;
+  next_service_date?: string | null;
+  created_at?: string;
+};

@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { parts } from "@/lib/data/parts";
-import { workshops } from "@/lib/data/mocks";
+import type { Metadata } from "next";
+import { fetchParts, fetchWorkshops } from "@/lib/supabase/queries";
+import { parts as fallbackParts } from "@/lib/data/parts";
+import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 
 const label: Record<string,string> = {
   "oli-mesin":"Oli Mesin","oli-gardan":"Oli Gardan","oli-samping":"Oli Samping 2T",
@@ -8,11 +10,29 @@ const label: Record<string,string> = {
   "rem":"Rem","kampas-rem":"Kampas Rem","aki":"Aki","rantai":"Rantai & Gir","kelistrikan":"Kelistrikan"
 };
 
+async function getPart(slug: string) {
+  const [parts, fallback] = await Promise.all([fetchParts().catch(() => []), Promise.resolve(fallbackParts)]);
+  const source = parts.length ? parts : fallback;
+  return source.find((x) => x.slug === slug);
+}
+
+export async function generateMetadata({params}:{params: Promise<{slug:string}>}): Promise<Metadata> {
+  const { slug } = await params;
+  const p = await getPart(slug);
+  if (!p) return { title: "Part tidak ditemukan" };
+  const title = `${p.brand} ${p.name} — Rp ${p.harga_min.toLocaleString("id-ID")}`;
+  const description = `${p.deskripsi} Cocok untuk ${p.cocok_motor.slice(0, 3).join(", ")}. Interval ganti ${p.interval_km.toLocaleString()}km.`;
+  return { title, description, openGraph: { title, description, images: [{ url: p.cover_url, alt: p.name }] } };
+}
+
 export default async function PartDetail({params}:{params: Promise<{slug:string}>}){
   const {slug}=await params;
-  const p = parts.find(x=>x.slug===slug);
+  const [parts, workshops] = await Promise.all([fetchParts().catch(() => []), fetchWorkshops().catch(() => [])]);
+  const source = parts.length ? parts : fallbackParts;
+  const ws = workshops.length ? workshops : fallbackWorkshops;
+  const p = source.find(x=>x.slug===slug);
   if(!p) return <div className="mx-auto max-w-3xl px-4 py-10">Part tidak ditemukan. <Link href="/katalog" className="underline">Kembali ke katalog</Link></div>;
-  const bengkelList = p.bengkel_ids.map(id=> workshops.find(w=>w.id===id)!).filter(Boolean);
+  const bengkelList = p.bengkel_ids.map(id=> ws.find(w=>w.id===id || w.slug===id)!).filter(Boolean);
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
       <div className="text-sm text-neutral-500"><Link href="/" className="hover:text-slate-900">Home</Link> / <Link href="/katalog" className="hover:text-slate-900">Katalog</Link> / <Link href={`/katalog?cat=${p.category}`} className="hover:text-slate-900">{label[p.category]}</Link> / <span className="text-slate-900 font-medium">{p.name}</span></div>

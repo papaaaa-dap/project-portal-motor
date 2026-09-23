@@ -219,9 +219,19 @@ create policy "own records" on maintenance_records for all using (
   exists (select 1 from motorcycles m where m.id = motorcycle_id and m.user_id = auth.uid())
 );
 
--- storage bucket untuk cover/foto (buat via Dashboard > Storage > New bucket: covers, public)
--- insert into storage.buckets (id, name, public) values ('covers','covers', true) on conflict do nothing;
--- policy storage: allow public read, admin write handled by service_role
+-- storage bucket untuk cover/foto + policies (jalankan sekali di SQL Editor)
+-- bucket public `covers` untuk foto part / bengkel / artikel
+insert into storage.buckets (id, name, public) values ('covers','covers', true) on conflict (id) do nothing;
+-- baca bebas (cover tampil publik tanpa login)
+drop policy if exists "public read covers" on storage.objects;
+create policy "public read covers" on storage.objects for select using (bucket_id = 'covers');
+-- upload/update/hapus untuk user login (admin atur lewat role di app)
+drop policy if exists "login write covers" on storage.objects;
+create policy "login write covers" on storage.objects for insert with check (bucket_id = 'covers' and auth.role() = 'authenticated');
+drop policy if exists "login update covers" on storage.objects;
+create policy "login update covers" on storage.objects for update using (bucket_id = 'covers' and auth.role() = 'authenticated');
+drop policy if exists "login delete covers" on storage.objects;
+create policy "login delete covers" on storage.objects for delete using (bucket_id = 'covers' and auth.role() = 'authenticated');
 
 -- trigger new user -> profile
 create or replace function handle_new_user() returns trigger as $$

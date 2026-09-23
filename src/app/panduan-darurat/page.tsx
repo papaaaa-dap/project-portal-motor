@@ -1,5 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { motorProblems } from "@/lib/data/mocks";
+
+export const metadata: Metadata = {
+  title: "Panduan Darurat — Mogok, Ban Bocor, Overheat",
+  description: "Langkah 3-tap saat mogok di jalan: ban bocor, rem blong, overheat, kehabisan bensin. Bisa dibaca offline setelah dibuka sekali.",
+};
 export default function Darurat(){
   const list = motorProblems.filter(p=>p.is_emergency);
   return (
