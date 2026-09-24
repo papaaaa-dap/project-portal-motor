@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { workshops as seedWorkshops } from "@/lib/data/mocks";
 import { fetchWorkshopsSupabase } from "@/lib/repo/workshopsRepo";
 import type { Workshop } from "@/lib/types";
 import { WorkshopCard } from "@/components/ui/Card";
@@ -23,10 +22,10 @@ export default function BengkelPage(){
   const [watching, setWatching]=useState(false);
   const [watchId, setWatchId]=useState<number | null>(null);
   const [err, setErr]=useState("");
-  const [workshops, setWorkshops]=useState<Workshop[]>(seedWorkshops);
+  const [workshops, setWorkshops]=useState<Workshop[]>([]);
 
   useEffect(()=>{
-    fetchWorkshopsSupabase().then((live)=>{ if(live.length) setWorkshops(live); }).catch(()=>{});
+    fetchWorkshopsSupabase().then(setWorkshops).catch(()=>{});
   },[]);
 
   const handleLoc=()=>{

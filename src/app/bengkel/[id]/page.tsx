@@ -1,14 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchWorkshops } from "@/lib/supabase/queries";
-import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 import { mapsUrlForWorkshop } from "@/lib/maps";
 import { getOpenStatus } from "@/lib/openStatus";
 import { waLink, isWa } from "@/lib/wa";
 
 async function getWorkshop(id: string) {
-  const live = await fetchWorkshops().catch(() => []);
-  const source = live.length ? live : fallbackWorkshops;
+  const source = await fetchWorkshops().catch(() => []);
   return source.find((x) => x.id === id || (x as unknown as { slug: string }).slug === id) as unknown as {
     id:string; name:string; address:string; kecamatan:string; lat?:number; lng?:number;
     maps_url?:string; foto_url:string; rating:number; jam_operasional:string; kontak:string; layanan:string[];

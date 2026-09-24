@@ -16,7 +16,7 @@ export async function fetchWorkshopsSupabase(): Promise<Workshop[]> {
   if (!isSupabaseConfigured()) return getWorkshopsMock();
   const sb = createClient();
   const { data, error } = await sb.from("workshops").select("*").order("created_at", { ascending: false });
-  if (error || !data) return getWorkshopsMock();
+  if (error || !data) return [];
   return data as Workshop[];
 }
 export async function upsertWorkshopSupabase(w: Workshop) {

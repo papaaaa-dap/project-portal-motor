@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { maintenanceRules } from "@/lib/data/mocks";
-import { parts as seedParts } from "@/lib/data/parts";
+import { maintenanceRules as fallbackRules } from "@/lib/data/mocks";
 import { fetchPartsSupabase } from "@/lib/repo/partsRepo";
 import type { Part } from "@/lib/types";
 import { getMotorSpec } from "@/lib/data/motorSpecs";
@@ -18,9 +17,9 @@ const initial: Motorcycle[] = [
   { id:"m3", brand:"Yamaha", model:"Vixion 150", year:2021, type:"manual", cc:150, kilometer:28500, last_service_date:"2026-02-12" },
 ];
 
-function rulesFor(m: Motorcycle): MaintenanceRule[] {
+function rulesFor(m: Motorcycle, rules: MaintenanceRule[]): MaintenanceRule[] {
   const t = m.type === "kopling" ? "manual" : m.type;
-  return maintenanceRules.filter((r) => r.motor_type === "all" || r.motor_type === t);
+  return rules.filter((r) => r.motor_type === "all" || r.motor_type === t);
 }
 
 function daysSince(dateStr: string): number {
@@ -31,8 +30,8 @@ function daysSince(dateStr: string): number {
 
 type Reminder = { rule: MaintenanceRule; sisaKm: number; sisaHari: number; status: "overdue" | "soon" | "ok"; basis: string };
 
-function computeReminders(m: Motorcycle, recs: MaintenanceRecord[]): Reminder[] {
-  return rulesFor(m).map((rule) => {
+function computeReminders(m: Motorcycle, recs: MaintenanceRecord[], rules: MaintenanceRule[]): Reminder[] {
+  return rulesFor(m, rules).map((rule) => {
     const last = recs.find((r) => r.service_type === rule.title);
     if (last) {
       const pakaiKm = Math.max(0, m.kilometer - last.kilometer);
@@ -68,7 +67,8 @@ const badge: Record<Reminder["status"], string> = {
 const badgeLabel: Record<Reminder["status"], string> = { overdue: "BUTUH SEKARANG", soon: "SEGERA", ok: "AMAN" };
 
 export default function MotorSaya(){
-  const [list, setList]=useState<Motorcycle[]>(initial);
+  const [list, setList]=useState<Motorcycle[]>([]);
+  const [rules, setRules]=useState<MaintenanceRule[]>(fallbackRules);
   const [records, setRecords]=useState<Record<string, MaintenanceRecord[]>>({});
   const [show, setShow]=useState(false);
   const [form, setForm]=useState({brand:"", model:"", year:2024, type:"matic" as const, kilometer:0});
@@ -77,10 +77,19 @@ export default function MotorSaya(){
   const [msg, setMsg]=useState("");
   const [openServis, setOpenServis]=useState<string | null>(null);
   const [sForm, setSForm]=useState({type:"Ganti Oli Mesin", date:new Date().toISOString().slice(0,10), km:0, cost:"", notes:""});
-  const [allParts, setAllParts]=useState<Part[]>(seedParts);
+  const [allParts, setAllParts]=useState<Part[]>([]);
 
   useEffect(()=>{
-    fetchPartsSupabase().then((live)=>{ if(live.length) setAllParts(live); }).catch(()=>{});
+    fetchPartsSupabase().then(setAllParts).catch(()=>{});
+    // rules live dari Supabase, fallback ke seed statis jika belum configured
+    (async () => {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const sb = createClient();
+        const { data } = await sb.from("maintenance_rules").select("*");
+        if (data && data.length) setRules(data as unknown as MaintenanceRule[]);
+      } catch {}
+    })();
   },[]);
 
   useEffect(()=>{
@@ -91,10 +100,10 @@ export default function MotorSaya(){
         setUserEmail(user?.email ?? null);
         if(user){
           try{
+            // login: Supabase murni — kosong = kosong, jangan tampilkan demo
             const remote = await fetchMotorcycles();
-            const base = remote.length ? remote : (getMotorcyclesMock().length ? getMotorcyclesMock() : initial);
-            setList(base);
-            setRecords(await fetchAllRecords(base.map((m) => m.id)));
+            setList(remote);
+            setRecords(await fetchAllRecords(remote.map((m) => m.id)));
             return;
           }catch{}
         }
@@ -138,7 +147,7 @@ export default function MotorSaya(){
     if (!sForm.km && sForm.km !== 0) return;
     setLoading(true); setMsg("");
     try {
-      const rule = maintenanceRules.find((r) => r.title === sForm.type);
+      const rule = rules.find((r) => r.title === sForm.type);
       const km = Number(sForm.km) || m.kilometer;
       const nextKm = rule ? km + rule.interval_km : undefined;
       const d = new Date(sForm.date + "T00:00:00");
@@ -174,9 +183,9 @@ export default function MotorSaya(){
 
   const urgentCount = useMemo(() => {
     let n = 0;
-    for (const m of list) for (const r of computeReminders(m, records[m.id] || [])) if (r.status === "overdue") n++;
+    for (const m of list) for (const r of computeReminders(m, records[m.id] || [], rules)) if (r.status === "overdue") n++;
     return n;
-  }, [list, records]);
+  }, [list, records, rules]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -209,7 +218,7 @@ export default function MotorSaya(){
       <div className="mt-6 grid md:grid-cols-2 gap-4">
         {list.map(m=>{
           const recs = records[m.id] || [];
-          const reminders = computeReminders(m, recs);
+          const reminders = computeReminders(m, recs, rules);
           const specs = getMotorSpec(m.brand, m.model) || { oli: "Cek Katalog Oli — belum ada spek presisi, pakai generik", banDepan: "-", banBelakang: "-", aki: "-", busi: "-", foto: "/motor2.jpeg" };
           const isPresisi = !!getMotorSpec(m.brand, m.model);
           const oliRec = getOliRekom(m, allParts);
@@ -262,7 +271,7 @@ export default function MotorSaya(){
                 {openServis === m.id && (
                   <div className="mt-3 border rounded-xl p-3 grid grid-cols-2 gap-2 bg-neutral-50">
                     <select value={sForm.type} onChange={(e)=>setSForm({...sForm, type:e.target.value})} className="col-span-2 h-10 border rounded-lg px-3 bg-white">
-                      {rulesFor(m).map((r)=><option key={r.id} value={r.title}>{r.title} — tiap {r.interval_km.toLocaleString()}km</option>)}
+                      {rulesFor(m, rules).map((r)=><option key={r.id} value={r.title}>{r.title} — tiap {r.interval_km.toLocaleString()}km</option>)}
                     </select>
                     <input type="date" value={sForm.date} onChange={(e)=>setSForm({...sForm, date:e.target.value})} className="h-10 border rounded-lg px-3 bg-white"/>
                     <input type="number" placeholder="Km saat servis" value={sForm.km} onChange={(e)=>setSForm({...sForm, km:Number(e.target.value)})} className="h-10 border rounded-lg px-3 bg-white"/>

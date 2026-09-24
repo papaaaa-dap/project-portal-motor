@@ -85,8 +85,19 @@ export async function fetchCategories(): Promise<Category[]> {
   const supabase = await getSupabaseServer();
   if (!supabase) return mockCategories;
   const { data, error } = await supabase.from("categories").select("*").order("name");
-  if (error || !data) return mockCategories;
-  return (data as Category[]) ?? mockCategories;
+  if (error || !data || data.length === 0) return mockCategories;
+
+  // Filter out legacy generic "tips" & "faq" from edukasi type
+  const dbCategories = (data as Category[]).filter(
+    (c) => !(c.type === "edukasi" && (c.slug === "tips" || c.name === "Tips" || c.slug === "faq" || c.name === "FAQ"))
+  );
+
+  const existingSlugs = new Set(dbCategories.map((c) => c.slug));
+  const missingDefaults = mockCategories.filter(
+    (c) => c.type === "edukasi" && !existingSlugs.has(c.slug)
+  );
+
+  return missingDefaults.length > 0 ? [...dbCategories, ...missingDefaults] : dbCategories;
 }
 
 // Motorcycles per user — requires auth; fallback ke null jika belum login / belum configured

@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
-import type { Part, PartCategory } from "@/lib/types";
-import { workshops } from "@/lib/data/mocks";
+import { useEffect, useState } from "react";
+import type { Part, PartCategory, Workshop } from "@/lib/types";
 import { slugify } from "@/lib/repo/partsRepo";
+import { fetchWorkshopsSupabase } from "@/lib/repo/workshopsRepo";
 import CoverUpload from "@/components/admin/CoverUpload";
 
 const cats: { slug: PartCategory; label: string; specs: string[] }[] = [
@@ -33,8 +33,12 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
   const [interval, setInterval] = useState(String(initial?.interval_km || "2000"));
   const [deskripsi, setDeskripsi] = useState(initial?.deskripsi || "");
   const [cover, setCover] = useState(initial?.cover_url || "");
-  const [bengkelIds, setBengkelIds] = useState<string[]>(initial?.bengkel_ids || ["w1"]);
+  const [bengkelIds, setBengkelIds] = useState<string[]>(initial?.bengkel_ids || []);
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
   const [err, setErr] = useState("");
+  useEffect(() => {
+    fetchWorkshopsSupabase().then(setWorkshops).catch(() => {});
+  }, []);
 
   const specFields = cats.find(c=>c.slug===category)?.specs || [];
 
@@ -44,7 +48,6 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
     if(!brand || !name) return setErr("Brand & Nama wajib");
     const min = parseInt(hargaMin), max = parseInt(hargaMax);
     if(!min || !max || min<=0 || max<min) return setErr("Harga min/max tidak valid (min < max, >0)");
-    if(bengkelIds.length===0) return setErr("Pilih minimal 1 bengkel");
     const slug = initial?.slug || slugify(`${brand}-${name}`);
     const p: Part = {
       id: initial?.id || `p-${Date.now()}`,
@@ -106,9 +109,10 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
           <label className="text-xs font-bold">Deskripsi<textarea value={deskripsi} onChange={e=>setDeskripsi(e.target.value)} rows={2} placeholder="Oli bawaan Honda untuk matic harian..." className="mt-1 w-full border rounded-lg p-3 text-sm font-normal"/></label>
 
           <div>
-            <div className="text-xs font-bold">Bengkel yang jual * ({bengkelIds.length} dipilih)</div>
+            <div className="text-xs font-bold">Bengkel yang jual <span className="font-normal text-neutral-500">(opsional)</span> ({bengkelIds.length} dipilih)</div>
             <div className="mt-1 grid grid-cols-2 gap-1 max-h-32 overflow-auto border rounded-lg p-2 bg-neutral-50">
-              {workshops.map(w=>(
+              {workshops.length === 0 && <span className="col-span-2 text-[11px] text-neutral-500 p-1">Belum ada bengkel di database — tambah dulu di tab Bengkel.</span>}
+              {workshops.map((w: Workshop)=>(
                 <label key={w.id} className="flex items-center gap-2 text-xs bg-white border rounded-full px-2 py-1 cursor-pointer">
                   <input type="checkbox" checked={bengkelIds.includes(w.id)} onChange={()=> toggleBengkel(w.id)} />
                   <span className="truncate">{w.name}</span>

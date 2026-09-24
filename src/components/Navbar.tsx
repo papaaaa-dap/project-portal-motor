@@ -9,7 +9,6 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 const nav = [
   { href: "/katalog", label: "KATALOG" },
   { href: "/bengkel", label: "BENGKEL" },
-  { href: "/tersimpan", label: "TERSIMPAN" },
   { href: "/cek-masalah", label: "CEK" },
   { href: "/panduan-darurat", label: "DARURAT" },
   { href: "/edukasi", label: "EDUKASI" },

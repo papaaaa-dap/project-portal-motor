@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchParts, fetchWorkshops } from "@/lib/supabase/queries";
-import { parts as fallbackParts } from "@/lib/data/parts";
-import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 
 const label: Record<string,string> = {
   "oli-mesin":"Oli Mesin","oli-gardan":"Oli Gardan","oli-samping":"Oli Samping 2T",
@@ -11,8 +9,8 @@ const label: Record<string,string> = {
 };
 
 async function getPart(slug: string) {
-  const [parts, fallback] = await Promise.all([fetchParts().catch(() => []), Promise.resolve(fallbackParts)]);
-  const source = parts.length ? parts : fallback;
+  const parts = await fetchParts().catch(() => []);
+  const source = parts;
   return source.find((x) => x.slug === slug);
 }
 
@@ -27,9 +25,7 @@ export async function generateMetadata({params}:{params: Promise<{slug:string}>}
 
 export default async function PartDetail({params}:{params: Promise<{slug:string}>}){
   const {slug}=await params;
-  const [parts, workshops] = await Promise.all([fetchParts().catch(() => []), fetchWorkshops().catch(() => [])]);
-  const source = parts.length ? parts : fallbackParts;
-  const ws = workshops.length ? workshops : fallbackWorkshops;
+  const [source, ws] = await Promise.all([fetchParts().catch(() => []), fetchWorkshops().catch(() => [])]);
   const p = source.find(x=>x.slug===slug);
   if(!p) return <div className="mx-auto max-w-3xl px-4 py-10">Part tidak ditemukan. <Link href="/katalog" className="underline">Kembali ke katalog</Link></div>;
   const bengkelList = p.bengkel_ids.map(id=> ws.find(w=>w.id===id || w.slug===id)!).filter(Boolean);

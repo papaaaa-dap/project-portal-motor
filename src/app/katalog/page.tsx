@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { fetchParts, fetchWorkshops } from "@/lib/supabase/queries";
-import { parts as fallbackParts } from "@/lib/data/parts";
-import { workshops as fallbackWorkshops } from "@/lib/data/mocks";
 import type { PartCategory } from "@/lib/types";
 
 const cats: { slug: PartCategory; label: string }[] = [
@@ -26,9 +24,9 @@ export default async function KatalogPage({searchParams}:{searchParams: Promise<
   const cat = sp.cat as PartCategory | undefined;
   const q = sp.q?.toLowerCase() || "";
   const [parts, workshops] = await Promise.all([fetchParts(), fetchWorkshops()]);
-  // fallback length guard — jika Supabase kosong, queries sudah return mock
-  const source = parts.length ? parts : fallbackParts;
-  const ws = workshops.length ? workshops : fallbackWorkshops;
+  // 100% Supabase: kosong = kosong, input via /admin
+  const source = parts;
+  const ws = workshops;
   let list = [...source];
   if(cat) list = list.filter(p=> p.category===cat);
   if(q) list = list.filter(p=> p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.deskripsi.toLowerCase().includes(q) || Object.values(p.specs).join(" ").toLowerCase().includes(q));

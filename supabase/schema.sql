@@ -201,6 +201,24 @@ create policy "admin write articles" on articles for all using (
 ) with check (
   exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
 );
+drop policy if exists "admin write problems" on motor_problems;
+create policy "admin write problems" on motor_problems for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
+drop policy if exists "admin write categories" on categories;
+create policy "admin write categories" on categories for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
+drop policy if exists "admin write rules" on maintenance_rules;
+create policy "admin write rules" on maintenance_rules for all using (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+) with check (
+  exists (select 1 from profiles where profiles.id = auth.uid() and profiles.role = 'admin')
+);
 
 -- private per user (idempotent)
 drop policy if exists "own motorcycles" on motorcycles;
@@ -227,11 +245,11 @@ drop policy if exists "public read covers" on storage.objects;
 create policy "public read covers" on storage.objects for select using (bucket_id = 'covers');
 -- upload/update/hapus untuk user login (admin atur lewat role di app)
 drop policy if exists "login write covers" on storage.objects;
-create policy "login write covers" on storage.objects for insert with check (bucket_id = 'covers' and auth.role() = 'authenticated');
+create policy "login write covers" on storage.objects for insert with check (bucket_id = 'covers' and auth.uid() is not null);
 drop policy if exists "login update covers" on storage.objects;
-create policy "login update covers" on storage.objects for update using (bucket_id = 'covers' and auth.role() = 'authenticated');
+create policy "login update covers" on storage.objects for update using (bucket_id = 'covers' and auth.uid() is not null) with check (bucket_id = 'covers' and auth.uid() is not null);
 drop policy if exists "login delete covers" on storage.objects;
-create policy "login delete covers" on storage.objects for delete using (bucket_id = 'covers' and auth.role() = 'authenticated');
+create policy "login delete covers" on storage.objects for delete using (bucket_id = 'covers' and auth.uid() is not null);
 
 -- trigger new user -> profile
 create or replace function handle_new_user() returns trigger as $$

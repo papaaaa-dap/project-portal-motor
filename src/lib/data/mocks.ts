@@ -9,9 +9,10 @@ export const categories: Category[] = [
   { id: "6", name: "Aki", slug: "aki", type: "perawatan" },
   { id: "7", name: "Rantai", slug: "rantai", type: "perawatan" },
   { id: "8", name: "Kelistrikan", slug: "kelistrikan", type: "perawatan" },
-  { id: "9", name: "Tips", slug: "tips", type: "edukasi" },
-  { id: "10", name: "Pengetahuan", slug: "pengetahuan", type: "edukasi" },
-  { id: "11", name: "FAQ", slug: "faq", type: "edukasi" },
+  { id: "9", name: "Pengetahuan", slug: "pengetahuan", type: "edukasi" },
+  { id: "10", name: "Mengenal Komponen", slug: "komponen", type: "edukasi" },
+  { id: "11", name: "Tips Merawat", slug: "tips-merawat", type: "edukasi" },
+  { id: "12", name: "Tips Berkendara", slug: "tips-berkendara", type: "edukasi" },
 ];
 
 // B — 100% Supabase: dummy kosong, input real via /admin

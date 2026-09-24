@@ -16,7 +16,7 @@ export async function fetchProblemsSupabase(): Promise<MotorProblem[]> {
   if (!isSupabaseConfigured()) return getProblemsMock();
   const sb = createClient();
   const { data, error } = await sb.from("motor_problems").select("*").order("created_at");
-  if (error || !data) return getProblemsMock();
+  if (error || !data) return [];
   return data as MotorProblem[];
 }
 export async function upsertProblemSupabase(p: MotorProblem) {

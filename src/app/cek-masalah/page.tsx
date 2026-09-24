@@ -1,16 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motorProblems as seedProblems } from "@/lib/data/mocks";
 import { fetchProblemsSupabase } from "@/lib/repo/problemsRepo";
 import type { MotorProblem } from "@/lib/types";
 // NOTE: halaman client — metadata statis didefinisikan di layout induk.
 export default function CekMasalah(){
   const [q, setQ]=useState("");
   const [sel, setSel]=useState<string| null>(null);
-  const [motorProblems, setMotorProblems]=useState<MotorProblem[]>(seedProblems);
+  const [motorProblems, setMotorProblems]=useState<MotorProblem[]>([]);
   useEffect(()=>{
-    fetchProblemsSupabase().then((live)=>{ if(live.length) setMotorProblems(live); }).catch(()=>{});
+    fetchProblemsSupabase().then(setMotorProblems).catch(()=>{});
   },[]);
   const filtered = motorProblems.filter(p=> p.title.toLowerCase().includes(q.toLowerCase()) && !p.is_emergency);
   const active = motorProblems.find(p=>p.id===sel);

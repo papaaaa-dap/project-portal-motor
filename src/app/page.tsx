@@ -1,21 +1,18 @@
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import { ArticleCard, WorkshopCard, CategoryCard } from "@/components/ui/Card";
-import { fetchParts, fetchWorkshops, fetchProblems } from "@/lib/supabase/queries";
-import { workshops as fallbackWorkshops, motorProblems as fallbackProblems } from "@/lib/data/mocks";
-import { parts as fallbackParts } from "@/lib/data/parts";
+import { fetchParts, fetchWorkshops, fetchProblems, fetchCategories } from "@/lib/supabase/queries";
 import { faqs } from "@/lib/data/oli";
 import FaqAccordion from "@/components/FaqAccordion";
 
 export default async function HomePage(){
-  const [liveParts, liveWorkshops, liveProblems] = await Promise.all([
+  const [parts, workshops, motorProblems, categories] = await Promise.all([
     fetchParts().catch(() => []),
     fetchWorkshops().catch(() => []),
     fetchProblems().catch(() => []),
+    fetchCategories().catch(() => []),
   ]);
-  const parts = liveParts.length ? liveParts : fallbackParts;
-  const workshops = liveWorkshops.length ? liveWorkshops : fallbackWorkshops;
-  const motorProblems = liveProblems.length ? liveProblems : fallbackProblems;
+  const edukasiCats = categories.filter(c => c.type === "edukasi");
   return (
     <div className="bg-white">
       {/* HERO - Bespoke Arch Reference (restore) */}
@@ -172,10 +169,17 @@ export default async function HomePage(){
       <section className="mx-auto max-w-[1280px] px-4 sm:px-6 py-6">
         <h2 className="text-[22px] font-black tracking-[-0.03em] text-[#0A0A0A]">PAHAM MOTOR, GA GAMPANG DITIPU BENGKEL</h2>
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <CategoryCard name="Tips Merawat" href="/edukasi?cat=tips" />
-          <CategoryCard name="Mengenal Komponen" href="/edukasi?cat=pengetahuan" />
-          <CategoryCard name="Tips Berkendara" href="/edukasi?cat=tips" />
-          <CategoryCard name="FAQ" href="/edukasi?cat=faq" />
+          {edukasiCats.map(c => (
+            <CategoryCard key={c.id} name={c.name} href={`/edukasi?cat=${c.slug}`} />
+          ))}
+          {edukasiCats.length === 0 && (
+            <>
+              <CategoryCard name="Pengetahuan" href="/edukasi?cat=pengetahuan" />
+              <CategoryCard name="Mengenal Komponen" href="/edukasi?cat=komponen" />
+              <CategoryCard name="Tips Merawat" href="/edukasi?cat=tips-merawat" />
+              <CategoryCard name="Tips Berkendara" href="/edukasi?cat=tips-berkendara" />
+            </>
+          )}
         </div>
       </section>
 

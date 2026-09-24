@@ -2,15 +2,41 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { searchAll } from "@/lib/data/mocks";
+import { fetchArticlesSupabase } from "@/lib/repo/articlesRepo";
+import { fetchWorkshopsSupabase } from "@/lib/repo/workshopsRepo";
+import { fetchProblemsSupabase } from "@/lib/repo/problemsRepo";
+import type { Article, Workshop, MotorProblem } from "@/lib/types";
 
 export default function SearchBar({ large }: { large?: boolean }) {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+  const [problems, setProblems] = useState<MotorProblem[]>([]);
   const r = useRouter();
   const ref = useRef<HTMLDivElement>(null);
 
-  const res = q.trim().length >= 2 ? searchAll(q) : { art: [], bengkel: [], masalah: [] };
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      fetchArticlesSupabase().catch(() => []),
+      fetchWorkshopsSupabase().catch(() => []),
+      fetchProblemsSupabase().catch(() => []),
+    ]).then(([a, w, p]) => {
+      if (!alive) return;
+      setArticles(a);
+      setWorkshops(w);
+      setProblems(p);
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const ql = q.trim().toLowerCase();
+  const res = ql.length >= 2 ? {
+    art: articles.filter(a => a.title.toLowerCase().includes(ql) || (a.excerpt || "").toLowerCase().includes(ql)),
+    bengkel: workshops.filter(w => w.name.toLowerCase().includes(ql) || w.layanan.some(l => l.toLowerCase().includes(ql)) || (w.kecamatan || "").toLowerCase().includes(ql)),
+    masalah: problems.filter(m => m.title.toLowerCase().includes(ql)),
+  } : { art: [], bengkel: [], masalah: [] };
   const hasResults = res.art.length + res.bengkel.length + res.masalah.length > 0;
   const showDropdown = open && q.trim().length >= 2;
 

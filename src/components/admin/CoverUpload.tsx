@@ -19,17 +19,23 @@ export default function CoverUpload({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
+  const [raw, setRaw] = useState("");
   const storageReady = isSupabaseConfigured();
 
   const pick = async (f: File | undefined) => {
     if (!f) return;
     setErr("");
+    setRaw("");
     setUploading(true);
     try {
       const url = await uploadCover(f, folder);
       onChange(url);
     } catch (e: unknown) {
-      setErr((e as Error).message);
+      const e2 = e as Error;
+      setErr(e2.message);
+      const cause = (e as { cause?: unknown }).cause;
+      if (typeof cause === "string" && cause !== e2.message) setRaw(cause);
+      console.error("[uploadCover] raw:", cause ?? e2);
     }
     setUploading(false);
   };
@@ -72,7 +78,12 @@ export default function CoverUpload({
           {!storageReady && (
             <p className="mono text-[10px] text-neutral-500">Upload nonaktif — Supabase belum dikonfigurasi. Tempel URL manual atau kosongkan.</p>
           )}
-          {err && <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2 py-1">{err}</p>}
+          {err && (
+            <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
+              <div>{err}</div>
+              {raw && <div className="mono text-[10px] text-red-500 mt-1 break-all">raw: {raw}</div>}
+            </div>
+          )}
         </div>
       </div>
       <input

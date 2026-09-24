@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getOpenStatus } from "@/lib/openStatus";
-import BookmarkButton from "@/components/BookmarkButton";
 
 export function ArticleCard({title, excerpt, cover, href, category, id}:{title:string; excerpt:string; cover:string; href:string; category:string; id?:string}){
   return (
@@ -9,7 +8,6 @@ export function ArticleCard({title, excerpt, cover, href, category, id}:{title:s
       <div className="h-[176px] overflow-hidden bg-[#F2F2F2] relative">
         <img src={cover} alt={title} className="h-full w-full object-cover group-hover:scale-[1.04] transition duration-500"/>
         <div className="absolute inset-0 ring-1 ring-inset ring-[#0A0A0A]/10 pointer-events-none" />
-        {id && <div className="absolute top-2 right-2 z-20"><BookmarkButton kind="article" id={id} /></div>}
       </div>
       <div className="p-4 flex flex-col flex-1">
         <span className="mono text-[10px] tracking-[0.12em] font-black bg-[#0A0A0A] text-white border border-[#0A0A0A] px-2 py-1 rounded-full w-fit">{category.toUpperCase()}</span>
@@ -28,7 +26,6 @@ export function WorkshopCard({w}:{w:any}){
   return (
     <div className="group bg-white rounded-[14px] border border-[#0A0A0A] p-3 flex gap-3 hover:shadow-[3px_3px_0_#0A0A0A] hover:-translate-y-[1px] transition-all relative">
       <Link href={`/bengkel/${w.id}`} className="absolute inset-0 z-10" aria-label={w.name} />
-      <div className="absolute top-2 right-2 z-20"><BookmarkButton kind="workshop" id={w.id} /></div>
       <div className="relative shrink-0">
         <img src={w.foto_url} alt={w.name} className="h-[84px] w-[84px] rounded-[10px] object-cover border border-[#0A0A0A]/10"/>
         <span className="absolute -bottom-2 -right-2 bg-[#0A0A0A] text-white border border-[#0A0A0A] mono text-[10px] font-black px-1.5 py-0.5 rounded-full">{w.rating}</span>

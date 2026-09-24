@@ -60,7 +60,7 @@ function LoginInner() {
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="text-2xl font-bold">Masuk ke RideIn</h1>
-      <p className="text-sm text-neutral-500">Login untuk akses Motor Saya, bookmark, dan reminder.</p>
+      <p className="text-sm text-neutral-500">Login untuk akses Motor Saya dan reminder servis.</p>
       {!configured && (
         <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900">
           <b>Mode mock aktif:</b> env Supabase belum diset. Auth asli akan aktif setelah <code>.env.local</code> diisi (lihat <code>.env.example</code>).

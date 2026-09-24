@@ -5,7 +5,7 @@ insert into categories (name, slug, type) values
 ('Oli','oli','perawatan'),('Mesin','mesin','perawatan'),('CVT','cvt','perawatan'),
 ('Rem','rem','perawatan'),('Ban','ban','perawatan'),('Aki','aki','perawatan'),
 ('Rantai','rantai','perawatan'),('Kelistrikan','kelistrikan','perawatan'),
-('Tips','tips','edukasi'),('Pengetahuan','pengetahuan','edukasi'),('FAQ','faq','edukasi');
+('Pengetahuan','pengetahuan','edukasi'),('Mengenal Komponen','komponen','edukasi'),('Tips Merawat','tips-merawat','edukasi'),('Tips Berkendara','tips-berkendara','edukasi');
 
 insert into maintenance_rules (motor_type, category, interval_km, interval_days, title, description) values
 ('all','Oli',2000,60,'Ganti Oli Mesin','Wajib 2000km/2 bulan'),

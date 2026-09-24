@@ -16,7 +16,6 @@ const statics = [
   "/sparepart",
   "/search",
   "/motor-saya",
-  "/tersimpan",
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -51,7 +51,7 @@ export async function fetchPartsSupabase(): Promise<Part[]> {
   if (!isSupabaseConfigured()) return getPartsMock();
   const supabase = createClient();
   const { data, error } = await supabase.from("parts").select("*").order("created_at", { ascending: false });
-  if (error || !data) return getPartsMock();
+  if (error || !data) return [];
   return data as unknown as Part[];
 }
 

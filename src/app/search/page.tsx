@@ -1,20 +1,13 @@
 import Link from "next/link";
 import { fetchParts, fetchArticles, fetchWorkshops, fetchProblems, fetchCategories } from "@/lib/supabase/queries";
-import { articles as fallbackArticles, workshops as fallbackWorkshops, motorProblems as fallbackProblems, categories as fallbackCategories } from "@/lib/data/mocks";
-import { parts as fallbackParts } from "@/lib/data/parts";
 import { ArticleCard, WorkshopCard } from "@/components/ui/Card";
 export default async function Search({searchParams}:{searchParams: Promise<{q?:string}>}){
   const sp=await searchParams;
   const q = sp.q||"";
-  const [liveParts, liveArticles, liveWorkshops, liveProblems, liveCategories] = await Promise.all([
+  const [parts, articles, workshops, motorProblems, categories] = await Promise.all([
     fetchParts().catch(() => []), fetchArticles().catch(() => []), fetchWorkshops().catch(() => []),
     fetchProblems().catch(() => []), fetchCategories().catch(() => []),
   ]);
-  const parts = liveParts.length ? liveParts : fallbackParts;
-  const articles = liveArticles.length ? liveArticles : fallbackArticles;
-  const workshops = liveWorkshops.length ? liveWorkshops : fallbackWorkshops;
-  const motorProblems = liveProblems.length ? liveProblems : fallbackProblems;
-  const categories = liveCategories.length ? liveCategories : fallbackCategories;
   const ql = q.toLowerCase();
   const res = q ? {
     art: articles.filter(a => a.title.toLowerCase().includes(ql) || (a.excerpt||"").toLowerCase().includes(ql)),
