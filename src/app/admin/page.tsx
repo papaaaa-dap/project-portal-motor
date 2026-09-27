@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { Part, Workshop, Article, MotorProblem, MaintenanceRule } from "@/lib/types";
+import type { Part, Workshop, Article, MotorProblem, MaintenanceRule, MotorSpecItem } from "@/lib/types";
 import PartForm from "@/components/admin/PartForm";
 import WorkshopForm from "@/components/admin/WorkshopForm";
 import ArticleForm, { EDUKASI_CATEGORIES } from "@/components/admin/ArticleForm";
 import ProblemForm from "@/components/admin/ProblemForm";
 import RuleForm from "@/components/admin/RuleForm";
+import MotorSpecForm from "@/components/admin/MotorSpecForm";
 import { fetchPartsSupabase, deletePartSupabase } from "@/lib/repo/partsRepo";
 import { fetchWorkshopsSupabase, deleteWorkshopSupabase } from "@/lib/repo/workshopsRepo";
 import {
@@ -16,12 +17,13 @@ import {
 } from "@/lib/repo/articlesRepo";
 import { fetchProblemsSupabase, deleteProblemSupabase } from "@/lib/repo/problemsRepo";
 import { fetchRulesSupabase, upsertRuleSupabase, deleteRuleSupabase } from "@/lib/repo/rulesRepo";
+import { fetchMotorSpecsSupabase, upsertMotorSpecSupabase, deleteMotorSpecSupabase } from "@/lib/repo/motorSpecsRepo";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { checkStorageHealth, STORAGE_FIX_SQL, type StorageHealth } from "@/lib/repo/storageRepo";
 import { ADMIN_RLS_FIX_SQL } from "@/lib/repo/rlsFix";
 
-const TABS = ["Katalog", "Bengkel", "Artikel", "Masalah", "Perawatan"] as const;
+const TABS = ["Katalog", "Bengkel", "Artikel", "Masalah", "Perawatan", "Spek Motor"] as const;
 const PROJECT_REF = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace("https://", "").split(".")[0] || "?";
 
 export default function Admin() {
@@ -31,14 +33,16 @@ export default function Admin() {
   const [aList, setAList] = useState<Article[]>([]);
   const [pList, setPList] = useState<MotorProblem[]>([]);
   const [rList, setRList] = useState<MaintenanceRule[]>([]);
+  const [specList, setSpecList] = useState<MotorSpecItem[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("Semua");
-  const [showForm, setShowForm] = useState<null | "part" | "bengkel" | "artikel" | "masalah" | "rule">(null);
+  const [showForm, setShowForm] = useState<null | "part" | "bengkel" | "artikel" | "masalah" | "rule" | "spec">(null);
   const [editingPart, setEditingPart] = useState<Part | null>(null);
   const [editingW, setEditingW] = useState<Workshop | null>(null);
   const [editingA, setEditingA] = useState<Article | null>(null);
   const [editingP, setEditingP] = useState<MotorProblem | null>(null);
   const [editingR, setEditingR] = useState<MaintenanceRule | null>(null);
+  const [editingSpec, setEditingSpec] = useState<MotorSpecItem | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [adminChecked, setAdminChecked] = useState(false);
@@ -71,18 +75,20 @@ export default function Admin() {
     const load = async () => {
       setLoading(true);
       try {
-        const [p, w, a, m, r] = await Promise.all([
+        const [p, w, a, m, r, s] = await Promise.all([
           fetchPartsSupabase().catch(() => []),
           fetchWorkshopsSupabase().catch(() => []),
           fetchArticlesSupabase().catch(() => []),
           fetchProblemsSupabase().catch(() => []),
           fetchRulesSupabase().catch(() => []),
+          fetchMotorSpecsSupabase().catch(() => []),
         ]);
         setList(p);
         setWList(w);
         setAList(a);
         setPList(m);
         setRList(r);
+        setSpecList(s);
       } catch {}
       try {
         setStorage(await checkStorageHealth());
@@ -175,6 +181,17 @@ export default function Admin() {
     if (!isAdmin) return;
     if (!confirm("Hapus aturan perawatan ini?")) return;
     try { setRList(await deleteRuleSupabase(id)); } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); }
+  };
+  const handleSaveSpec = async (spec: MotorSpecItem) => {
+    if (!isAdmin) { alert("Butuh role admin."); return; }
+    try {
+      setSpecList(await upsertMotorSpecSupabase(spec));
+    } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); }
+  };
+  const handleDeleteSpec = async (id: string) => {
+    if (!isAdmin) return;
+    if (!confirm("Hapus spesifikasi motor ini?")) return;
+    try { setSpecList(await deleteMotorSpecSupabase(id)); } catch (e: unknown) { alert("Supabase error: " + (e as Error).message); }
   };
 
   const cats = ["Semua", ...Array.from(new Set(list.map((p) => p.category)))];
@@ -638,11 +655,77 @@ export default function Admin() {
         </div>
       )}
 
+      {tab === "Spek Motor" && (
+        <div className="mt-4 bg-white border rounded-xl p-4">
+          <div className="flex justify-between items-center gap-2">
+            <h3 className="font-bold">Spesifikasi Motor Resmi Pabrikan ({specList.length})</h3>
+            <button
+              disabled={!isAdmin}
+              onClick={() => {
+                setEditingSpec(null);
+                setShowForm("spec");
+              }}
+              className={`h-8 px-3 rounded-full text-xs font-black border ${
+                isAdmin ? "bg-[#0A0A0A] text-white hover:bg-black" : "bg-neutral-100 text-neutral-400"
+              }`}
+            >
+              + Tambah Spek Motor
+            </button>
+          </div>
+          <p className="text-xs text-neutral-500 mt-1">CRUD Supabase — tabel motor_specs (otomatis dipasang di Motor Saya).</p>
+          <ul className="mt-3 text-sm space-y-2 max-h-[460px] overflow-auto">
+            {specList.map((s) => (
+              <li key={s.id} className="border rounded-xl p-3 bg-neutral-50 flex justify-between items-center gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <b>{s.brand} {s.model}</b>
+                    <span className="text-[10px] px-2 py-0.5 bg-neutral-200 border rounded font-mono uppercase font-bold">
+                      {s.type}
+                    </span>
+                  </div>
+                  <div className="text-xs text-neutral-600 mt-1">
+                    🛢️ Oli: <b>{s.oli}</b> ({s.volume_oli}) • 🛞 Ban: D {s.ban_depan} / B {s.ban_belakang} • 🔋 Aki: {s.aki} • ⚡ Busi: {s.busi}
+                  </div>
+                  {s.catatan && <div className="text-[11px] text-neutral-500 italic mt-0.5">"{s.catatan}"</div>}
+                </div>
+                <span className="flex gap-1 shrink-0">
+                  <button
+                    disabled={!isAdmin}
+                    onClick={() => {
+                      setEditingSpec(s);
+                      setShowForm("spec");
+                    }}
+                    className={`h-7 px-3 rounded-full text-xs font-bold border ${
+                      isAdmin ? "bg-white hover:bg-[#0A0A0A] hover:text-white" : "bg-neutral-100 text-neutral-400"
+                    }`}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    disabled={!isAdmin}
+                    onClick={() => handleDeleteSpec(s.id)}
+                    className={`h-7 px-3 rounded-full text-xs font-bold border ${
+                      isAdmin ? "bg-white hover:bg-red-600 hover:text-white" : "bg-neutral-100 text-neutral-400"
+                    }`}
+                  >
+                    Hapus
+                  </button>
+                </span>
+              </li>
+            ))}
+            {specList.length === 0 && (
+              <li className="py-8 text-center text-sm text-neutral-500">Belum ada spesifikasi motor di Supabase.</li>
+            )}
+          </ul>
+        </div>
+      )}
+
       {showForm === "part" && <PartForm initial={editingPart} onSave={handleSavePart} onClose={() => setShowForm(null)} />}
       {showForm === "bengkel" && <WorkshopForm initial={editingW} onSave={handleSaveW} onClose={() => setShowForm(null)} />}
       {showForm === "artikel" && <ArticleForm initial={editingA} onSave={handleSaveA} onClose={() => setShowForm(null)} />}
       {showForm === "masalah" && <ProblemForm initial={editingP} onSave={handleSaveP} onClose={() => setShowForm(null)} />}
       {showForm === "rule" && <RuleForm initial={editingR} onSave={handleSaveR} onClose={() => setShowForm(null)} />}
+      {showForm === "spec" && <MotorSpecForm initial={editingSpec} onSave={handleSaveSpec} onClose={() => setShowForm(null)} />}
 
       <div className="mt-6">
         <Link href="/" className="text-sm text-neutral-900 hover:underline">

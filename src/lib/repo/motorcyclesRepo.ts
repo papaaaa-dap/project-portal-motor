@@ -5,6 +5,10 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 
 const KEY = "motorkita_motorcycles_mock";
 
+function isUuid(id: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 export function getMotorcyclesMock(): Motorcycle[] {
   if (typeof window === "undefined") return [];
   try {
@@ -26,7 +30,7 @@ export async function fetchMotorcycles(): Promise<Motorcycle[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return getMotorcyclesMock();
   const { data, error } = await supabase.from("motorcycles").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-  if (error || !data) return [];
+  if (error || !data) return getMotorcyclesMock();
   return data as unknown as Motorcycle[];
 }
 
@@ -36,10 +40,19 @@ export async function addMotorcycle(m: Omit<Motorcycle, "id"> & { id?: string })
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const payload = { user_id: user.id, brand: m.brand, model: m.model, year: m.year, type: m.type, cc: m.cc, kilometer: m.kilometer, last_service_date: m.last_service_date, notes: m.notes ?? null };
+      const payload = {
+        user_id: user.id,
+        brand: m.brand,
+        model: m.model,
+        year: m.year,
+        type: m.type,
+        cc: m.cc,
+        kilometer: m.kilometer,
+        last_service_date: m.last_service_date,
+        notes: m.notes ?? null,
+      };
       const { error } = await supabase.from("motorcycles").insert(payload);
-      if (error) throw error;
-      return fetchMotorcycles();
+      if (!error) return fetchMotorcycles();
     }
   }
   const list = getMotorcyclesMock();
@@ -50,13 +63,12 @@ export async function addMotorcycle(m: Omit<Motorcycle, "id"> & { id?: string })
 }
 
 export async function deleteMotorcycle(id: string) {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && isUuid(id)) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { error } = await supabase.from("motorcycles").delete().eq("id", id);
-      if (error) throw error;
-      return fetchMotorcycles();
+      if (!error) return fetchMotorcycles();
     }
   }
   const next = getMotorcyclesMock().filter((x) => x.id !== id);
@@ -65,10 +77,16 @@ export async function deleteMotorcycle(id: string) {
 }
 
 export async function touchMotorcycleAfterService(id: string, kilometer: number, service_date: string) {
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && isUuid(id)) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) return fetchMotorcycles();
+    if (user) {
+      await supabase
+        .from("motorcycles")
+        .update({ kilometer, last_service_date: service_date })
+        .eq("id", id);
+      return fetchMotorcycles();
+    }
   }
   const list = getMotorcyclesMock().map((x) =>
     x.id === id ? { ...x, kilometer: Math.max(x.kilometer, kilometer), last_service_date: service_date } : x

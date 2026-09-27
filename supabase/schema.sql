@@ -260,3 +260,13 @@ begin
 end; $$ language plpgsql security definer;
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute function handle_new_user();
+
+-- trigger auto-confirm email (tanpa verifikasi email manual)
+create or replace function public.auto_confirm_user_email() returns trigger as $$
+begin
+  new.email_confirmed_at := coalesce(new.email_confirmed_at, now());
+  return new;
+end; $$ language plpgsql security definer;
+drop trigger if exists on_auth_user_created_auto_confirm on auth.users;
+create trigger on_auth_user_created_auto_confirm before insert on auth.users for each row execute function public.auto_confirm_user_email();
+

@@ -103,3 +103,18 @@ export type MaintenanceRecord = {
   next_service_date?: string | null;
   created_at?: string;
 };
+
+export type MotorSpecItem = {
+  id: string;
+  brand: string;
+  model: string;
+  type: "matic" | "manual" | "kopling";
+  oli: string;
+  volume_oli: string;
+  ban_depan: string;
+  ban_belakang: string;
+  aki: string;
+  busi: string;
+  catatan?: string;
+};
+
