@@ -437,8 +437,14 @@ export default function Admin() {
               <li key={w.id} className="flex justify-between items-center border-b py-2 gap-2">
                 <span className="truncate pr-2">
                   <b>{w.name}</b>{" "}
-                  <span className="text-xs text-neutral-500">
-                    — {w.kecamatan} • {w.jam_operasional} • {w.layanan.slice(0, 2).join(", ")}
+                  {(w.lat == null || w.lng == null) && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200 ml-1">
+                      tanpa pin
+                    </span>
+                  )}
+                  <span className="text-xs text-neutral-500 block truncate">
+                    — {w.kecamatan} • {w.jam_operasional} • {(w.layanan || []).slice(0, 2).join(", ")}
+                    {(w.lat == null || w.lng == null) && " • klik Edit → isi Lat/Lng"}
                   </span>
                 </span>
                 <span className="flex gap-1 shrink-0">

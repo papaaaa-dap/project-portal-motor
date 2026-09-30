@@ -32,28 +32,46 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
   const [kontak, setKontak] = useState(initial?.kontak||"");
   const [foto, setFoto] = useState(initial?.foto_url||"");
   const [rating, setRating] = useState(String(initial?.rating||"4.5"));
+  const [latStr, setLatStr] = useState(initial?.lat != null ? String(initial.lat) : "");
+  const [lngStr, setLngStr] = useState(initial?.lng != null ? String(initial.lng) : "");
   const [err, setErr] = useState("");
+
+  const liveParsed = parseGoogleMapsLink(mapsUrl || "");
+  const effLat = latStr.trim() !== "" ? parseFloat(latStr) : liveParsed.lat;
+  const effLng = lngStr.trim() !== "" ? parseFloat(lngStr) : liveParsed.lng;
+  const hasPin = effLat != null && !isNaN(effLat as number) && effLng != null && !isNaN(effLng as number);
+
+  const autofillFromLink = () => {
+    if (liveParsed.lat != null && liveParsed.lng != null) {
+      setLatStr(String(liveParsed.lat));
+      setLngStr(String(liveParsed.lng));
+    }
+  };
 
   const submit=()=>{
     if(!name || !kec) return setErr("Nama & kecamatan wajib");
     if(!mapsUrl.trim()) return setErr("Link Google Maps wajib — buka Google Maps → Share → Copy link");
     const parsed = parseGoogleMapsLink(mapsUrl);
     if(!parsed.maps_url) return setErr("Link tidak valid");
+    const manualLat = latStr.trim() !== "" ? parseFloat(latStr) : undefined;
+    const manualLng = lngStr.trim() !== "" ? parseFloat(lngStr) : undefined;
+    if ((latStr.trim() !== "" && isNaN(manualLat as number)) || (lngStr.trim() !== "" && isNaN(manualLng as number)))
+      return setErr("Lat / Lng harus angka, cth: -7.2975, 112.738");
     // lat/lng optional untuk peta; jika tidak ter-parse, tetap simpan link untuk Navigasi langsung
     const w: Workshop & { maps_url: string } = {
       id: initial?.id || `w-${Date.now()}`,
       slug: initial?.slug || slugify(name),
       name, address: address||`Jl. ${kec} No.1`, kecamatan: kec,
-      lat: parsed.lat ?? initial?.lat,
-      lng: parsed.lng ?? initial?.lng,
+      lat: manualLat ?? parsed.lat ?? initial?.lat,
+      lng: manualLng ?? parsed.lng ?? initial?.lng,
       maps_url: parsed.maps_url,
       jam_operasional: jam, layanan: normalizeLayanan(layanan.split(",")),
       kontak: kontak||"031-xxxxxxx", foto_url: foto||"/motor4.jpeg",
       rating: parseFloat(rating)||4.5
     } as unknown as Workshop & { maps_url: string };
     // warning if lat/lng not extracted
-    if(parsed.lat == null) {
-      if(!confirm("Link tidak mengandung koordinat lat,lng yang terdeteksi. Tetap simpan? Peta tidak akan tampil pin, tapi tombol Navigasi tetap langsung ke link Google Maps.")) return;
+    if(w.lat == null || w.lng == null) {
+      if(!confirm("Belum ada koordinat — pin TIDAK akan muncul di peta (tombol Navigasi tetap jalan). Tetap simpan? Isi Lat/Lng manual biar muncul pin.")) return;
     }
     onSave(w as unknown as Workshop); onClose();
   };
@@ -70,7 +88,20 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
             <label className="text-xs font-bold">Kecamatan *<input value={kec} onChange={e=>setKec(e.target.value)} placeholder="Wonokromo" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
             <label className="text-xs font-bold">Jam<input value={jam} onChange={e=>setJam(e.target.value)} placeholder="08:00-17:00 / 24 Jam" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
           </div>
-          <label className="text-xs font-bold">Link Google Maps *<input value={mapsUrl} onChange={e=>setMapsUrl(e.target.value)} placeholder="https://maps.google.com/?q=-7.2975,112.738 atau https://goo.gl/maps/..." className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/><span className="mono text-[10px] font-normal text-neutral-500">Contoh: https://maps.app.goo.gl/xxxx atau https://www.google.com/maps/place/.../@-7.28,112.73,15z — buka di Google Maps lalu Share</span></label>
+          <label className="text-xs font-bold">Link Google Maps *<input value={mapsUrl} onChange={e=>setMapsUrl(e.target.value)} placeholder="https://maps.google.com/?q=-7.2975,112.738 atau https://goo.gl/maps/..." className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/><span className="mono text-[10px] font-normal text-neutral-500">JANGAN pakai link pendek goo.gl / maps.app.goo.gl — buka linknya di browser, copy URL panjang yang ada @-7.x,112.x. Link pendek tidak ada koordinat → pin hilang.</span></label>
+          <div className={`rounded-lg border p-2 ${hasPin ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold">{hasPin ? `✓ Pin akan muncul (${effLat}, ${effLng})` : "⚠ Pin TIDAK akan muncul — isi Lat/Lng"}</span>
+              {liveParsed.lat != null && (
+                <button type="button" onClick={autofillFromLink} className="text-[11px] font-bold px-2 py-1 rounded-full border bg-white hover:bg-neutral-100">Ambil dari link</button>
+              )}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="text-xs font-bold">Lat<input value={latStr} onChange={e=>setLatStr(e.target.value)} placeholder="-7.2975" inputMode="decimal" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal bg-white"/></label>
+              <label className="text-xs font-bold">Lng<input value={lngStr} onChange={e=>setLngStr(e.target.value)} placeholder="112.738" inputMode="decimal" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal bg-white"/></label>
+            </div>
+            <p className="mono text-[10px] text-neutral-500 mt-1">Cara: buka Google Maps → klik titik bengkel → klik koordinat → copy paste ke sini. Cth Surabaya: -7.28, 112.74.</p>
+          </div>
           <div>
             <span className="text-xs font-bold">Layanan (koma)</span>
             <div className="mt-1 flex flex-wrap gap-1.5">

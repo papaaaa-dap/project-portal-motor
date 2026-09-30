@@ -85,7 +85,19 @@ export default function BengkelPage(){
         {openOnly && <span className="mono text-xs text-green-400 bg-green-900/20 border border-green-800/30 px-2 py-1 rounded-full">{list.length} buka</span>}
       </div>
       <div className="mt-6 grid lg:grid-cols-2 gap-6">
-        <div><LeafletMap workshops={list} center={loc||undefined} userLocation={loc}/></div>
+        <div>
+          <LeafletMap workshops={list} center={loc||undefined} userLocation={loc}/>
+          {(() => {
+            const tanpa = list.filter((w:any)=> w.lat == null || w.lng == null).length;
+            const ada = list.length - tanpa;
+            return (
+              <p className="mt-2 text-xs text-[var(--muted-foreground)]">
+                📍 {ada}/{list.length} tampil di peta
+                {tanpa > 0 && <> • {tanpa} tanpa koordinat (tetap ada di list, klik Navigasi). Lengkapi Lat/Lng di /admin → Bengkel → Edit.</>}
+              </p>
+            );
+          })()}
+        </div>
         <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
           {list.map((w:any)=>(
             <div key={w.id}>
