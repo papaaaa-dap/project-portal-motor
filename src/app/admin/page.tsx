@@ -213,39 +213,31 @@ export default function Admin() {
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="flex flex-wrap justify-between gap-3 items-start">
         <div>
-          <h1 className="text-2xl font-black tracking-tight">CMS ADMIN — MOTORKITA</h1>
+          <h1 className="text-2xl font-black tracking-tight">PANEL KELOLA KONTEN — MOTORKITA</h1>
           <p className="text-sm text-neutral-600">
-            Supabase langsung —{" "}
+            Sistem Manajemen Data —{" "}
             {adminEmail ? (
               <>
-                login sebagai <b>{adminEmail}</b>
-                {adminChecked && isAdmin ? " (admin)" : adminChecked ? " (bukan admin)" : ""}
+                Terhubung sebagai <b>{adminEmail}</b>
+                {adminChecked && isAdmin ? " (Administrator)" : adminChecked ? " (Akses Terbatas)" : ""}
               </>
             ) : (
-              "belum login"
+              "Belum Terhubung"
             )}
-            . {isAdmin ? "CRUD Supabase aktif via RLS." : "Butuh role admin."}
-            {loading && " Memuat..."}
-          </p>
-          <p className="mono mt-1 text-[11px] text-neutral-500">
-            Project app: <b>{PROJECT_REF}</b> — harus sama dengan project di Dashboard tempat kamu Run SQL.
+            . {isAdmin ? "Akses Manajemen Data Aktif." : "Memerlukan akses Administrator."}
+            {loading && " Memuat data..."}
           </p>
           {adminChecked && !isAdmin && adminEmail && (
             <p className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">
-              Akun <b>{adminEmail}</b> belum admin. Jalankan di SQL Editor:{" "}
-              <code className="bg-white px-1 rounded">
-                update profiles set role='admin' where id = (select id from auth.users where email='{adminEmail}')
-              </code>{" "}
-              lalu refresh.
+              Akun <b>{adminEmail}</b> belum memiliki akses admin. Silakan ubah role akun menjadi <code>admin</code> pada database.
             </p>
           )}
           {adminChecked && !adminEmail && (
             <p className="mt-2 text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 text-amber-900">
               Belum login —{" "}
               <Link href="/login" className="underline font-bold">
-                Masuk
-              </Link>{" "}
-              dulu, lalu set role admin via SQL di atas.
+                Masuk ke Akun Admin
+              </Link>
             </p>
           )}
           {storage && !storage.ok && (
@@ -257,20 +249,9 @@ export default function Admin() {
           )}
           {storage?.ok && (
             <p className="mt-2 text-xs bg-green-50 border border-green-200 rounded-lg p-2 text-green-800">
-              <b>Storage OK</b> — koneksi bucket 'covers' terbaca.
+              <b>Penyimpanan Gambar:</b> Terhubung dan Siap Digunakan.
             </p>
           )}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button onClick={copyStorageSql} className="h-8 px-3 rounded-full bg-[#0A0A0A] text-white text-xs font-bold">
-              {copied ? "✓ SQL tersalin!" : "Salin SQL fix Storage"}
-            </button>
-            <button onClick={copyRlsSql} className="h-8 px-3 rounded-full border border-[#0A0A0A] bg-white text-xs font-bold">
-              {copiedRls ? "✓ SQL tersalin!" : "Salin SQL fix RLS tabel"}
-            </button>
-            <span className="text-[11px] text-neutral-500">
-              paste di Dashboard → SQL Editor → Run (project yang sama), lalu refresh + coba lagi.
-            </span>
-          </div>
         </div>
         <span
           className={`h-9 px-4 rounded-full text-xs font-black border grid place-items-center ${

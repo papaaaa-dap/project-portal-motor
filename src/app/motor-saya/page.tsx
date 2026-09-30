@@ -264,7 +264,7 @@ export default function MotorSaya(){
               </span>
             ) : (
               <span className="bg-amber-500/20 text-amber-200 border border-amber-500/30 px-3 py-1 rounded-full font-medium">
-                Tersimpan di browser lokal. <Link href="/login" className="underline font-bold text-white hover:text-amber-300">Login</Link> untuk simpan ke cloud Supabase.
+                Tersimpan di browser lokal. <Link href="/login" className="underline font-bold text-white hover:text-amber-300">Login</Link> untuk sinkronisasi otomatis ke akun Anda.
               </span>
             )}
           </div>

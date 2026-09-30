@@ -70,7 +70,7 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
           <h3 className="font-black">{initial ? "Edit Part" : "Tambah Part Baru"}</h3>
           <button onClick={onClose} className="h-8 w-8 rounded-full border grid place-items-center">✕</button>
         </div>
-        <p className="mono text-[11px] text-neutral-500 mt-1">Upload foto ke Supabase Storage, atau tempel URL / kosongkan (= default lokal).</p>
+        <p className="mono text-[11px] text-neutral-500 mt-1">Upload foto produk atau gunakan URL gambar.</p>
 
         <div className="mt-4 grid gap-3">
           <div className="grid grid-cols-2 gap-2">
@@ -127,7 +127,6 @@ export default function PartForm({ onSave, onClose, initial }: { onSave:(p:Part)
             <button onClick={submit} className="flex-1 h-10 rounded-full bg-[#0A0A0A] text-white text-sm font-black">{initial ? "Simpan Perubahan" : "Simpan Part"}</button>
             <button onClick={onClose} className="h-10 px-6 rounded-full border bg-white text-sm font-bold">Batal</button>
           </div>
-          <p className="mono text-[11px] text-neutral-500 text-center">Kosongkan foto = pakai default lokal. Upload butuh Supabase terkonfigurasi.</p>
         </div>
       </div>
     </div>

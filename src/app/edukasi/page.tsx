@@ -39,14 +39,14 @@ export default async function Edukasi({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="text-sm text-neutral-500">
-        <Link href="/" className="hover:text-slate-900">
+      <div className="text-sm text-[var(--muted-foreground)]">
+        <Link href="/" className="hover:text-[var(--foreground)]">
           Home
         </Link>{" "}
-        / <span className="text-slate-900 font-medium">Edukasi</span>
+        / <span className="text-[var(--foreground)] font-medium">Edukasi</span>
       </div>
       <h1 className="mt-2 text-2xl font-black tracking-tight">EDUKASI MOTOR</h1>
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-[var(--muted-foreground)]">
         Pengetahuan dasar, tips merawat, dan FAQ dengan bahasa awam.
       </p>
 
@@ -55,7 +55,7 @@ export default async function Edukasi({
         <Link
           href="/edukasi"
           className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition ${
-            !cat ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white text-neutral-700 hover:bg-neutral-100"
+            !cat ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]" : "bg-[var(--card)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
           }`}
         >
           Semua
@@ -68,8 +68,8 @@ export default async function Edukasi({
               href={`/edukasi?cat=${c.slug}`}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition ${
                 isSelected
-                  ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-                  : "bg-white text-neutral-700 hover:bg-neutral-100"
+                  ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
+                  : "bg-[var(--card)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
               }`}
             >
               {c.name}
@@ -80,10 +80,10 @@ export default async function Edukasi({
 
       {cat && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 bg-neutral-100 border rounded-full px-3 py-1 text-xs">
-            <span className="text-neutral-600">Kategori aktif:</span>
+          <div className="inline-flex items-center gap-2 bg-[var(--muted)] border rounded-full px-3 py-1 text-xs">
+            <span className="text-[var(--muted-foreground)]">Kategori aktif:</span>
             <span className="font-bold">{activeCategory?.name || cat}</span>
-            <Link href="/edukasi" className="ml-1 text-neutral-400 hover:text-black font-bold">
+            <Link href="/edukasi" className="ml-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-bold">
               ✕ Clear
             </Link>
           </div>
@@ -112,7 +112,7 @@ export default async function Edukasi({
         })}
 
         {displayList.length === 0 && (
-          <div className="col-span-full py-12 text-center text-sm text-neutral-500 bg-neutral-50 rounded-2xl border">
+          <div className="col-span-full py-12 text-center text-sm text-[var(--muted-foreground)] bg-[var(--muted)] rounded-2xl border">
             Belum ada artikel edukasi. Tambah artikel via CMS Admin.
           </div>
         )}
@@ -120,7 +120,7 @@ export default async function Edukasi({
 
       <div className="mt-10">
         <h2 className="text-xl font-black tracking-tight">FAQ — PERTANYAAN SERING</h2>
-        <p className="text-sm text-neutral-600 mt-1">Jawaban singkat, kalau masih bingung hubungi kami di bawah.</p>
+        <p className="text-sm text-[var(--muted-foreground)] mt-1">Jawaban singkat, kalau masih bingung hubungi kami di bawah.</p>
         <div className="mt-4">
           <FaqAccordion items={faqs} allowContact />
         </div>

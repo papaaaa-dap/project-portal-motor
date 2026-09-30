@@ -58,7 +58,7 @@ export default function CoverUpload({
               type="button"
               disabled={uploading || !storageReady}
               onClick={() => inputRef.current?.click()}
-              title={storageReady ? "Upload ke Supabase Storage" : "Isi .env.local dulu untuk aktifkan upload"}
+              title="Pilih dan upload berkas foto"
               className="h-9 px-4 rounded-full bg-[#0A0A0A] text-white text-xs font-bold disabled:opacity-40"
             >
               {uploading ? "Mengupload..." : "Upload File"}
@@ -72,12 +72,9 @@ export default function CoverUpload({
           <input
             value={value}
             onChange={(e) => { setErr(""); onChange(e.target.value); }}
-            placeholder="https://... (atau kosongkan = foto lokal default)"
+            placeholder="https://... atau tempel URL gambar"
             className="w-full h-9 border rounded-lg px-3 text-sm font-normal"
           />
-          {!storageReady && (
-            <p className="mono text-[10px] text-neutral-500">Upload nonaktif — Supabase belum dikonfigurasi. Tempel URL manual atau kosongkan.</p>
-          )}
           {err && (
             <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
               <div>{err}</div>

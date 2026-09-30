@@ -78,7 +78,7 @@ export default function SearchBar({ large }: { large?: boolean }) {
                 <div>
                   <div className="mono text-[10px] tracking-[0.12em] font-black text-[#717171] px-2 py-1">ARTIKEL • {res.art.length}</div>
                   {res.art.slice(0,3).map(a=>(
-                    <Link key={a.id} href={`/perawatan/${a.slug}`} onClick={()=>setOpen(false)} className="flex gap-3 p-2 rounded-[10px] hover:bg-[#F2F2F2] transition">
+                    <Link key={a.id} href={`/perawatan/${a.slug}`} onClick={()=>setOpen(false)} className="flex gap-3 p-2 rounded-[10px] hover:bg-[var(--muted)] transition">
                       <img src={a.cover_url} alt="" className="h-10 w-10 rounded-[8px] object-cover border border-black/10 shrink-0"/>
                       <div className="min-w-0"><div className="text-[13px] font-bold leading-tight line-clamp-1">{a.title}</div><div className="text-xs text-[#717171] line-clamp-1">{a.excerpt}</div></div>
                     </Link>
@@ -89,7 +89,7 @@ export default function SearchBar({ large }: { large?: boolean }) {
                 <div>
                   <div className="mono text-[10px] tracking-[0.12em] font-black text-[#717171] px-2 py-1">BENGKEL • {res.bengkel.length}</div>
                   {res.bengkel.slice(0,3).map(w=>(
-                    <Link key={w.id} href={`/bengkel/${w.id}`} onClick={()=>setOpen(false)} className="flex gap-3 p-2 rounded-[10px] hover:bg-[#F2F2F2] transition">
+                    <Link key={w.id} href={`/bengkel/${w.id}`} onClick={()=>setOpen(false)} className="flex gap-3 p-2 rounded-[10px] hover:bg-[var(--muted)] transition">
                       <img src={w.foto_url} alt="" className="h-10 w-10 rounded-[8px] object-cover border border-black/10 shrink-0"/>
                       <div className="min-w-0"><div className="text-[13px] font-bold leading-tight truncate">{w.name}</div><div className="text-xs text-[#717171] truncate">{w.kecamatan} - {w.address}</div></div>
                     </Link>
@@ -101,7 +101,7 @@ export default function SearchBar({ large }: { large?: boolean }) {
                   <div className="mono text-[10px] tracking-[0.12em] font-black text-[#717171] px-2 py-1">MASALAH • {res.masalah.length}</div>
                   <div className="flex flex-wrap gap-1.5 px-2">
                     {res.masalah.slice(0,4).map(m=>(
-                      <Link key={m.id} href={`/cek-masalah`} onClick={()=>setOpen(false)} className="mono text-[11px] font-bold bg-[#F2F2F2] border border-[#0A0A0A]/10 px-2.5 py-1 rounded-full hover:bg-[#0A0A0A] hover:text-white transition">{m.title}</Link>
+                      <Link key={m.id} href={`/cek-masalah`} onClick={()=>setOpen(false)} className="mono text-[11px] font-bold bg-[var(--muted)] border border-[var(--border)] px-2.5 py-1 rounded-full hover:bg-[var(--foreground)] hover:text-[var(--background)] transition">{m.title}</Link>
                     ))}
                   </div>
                 </div>

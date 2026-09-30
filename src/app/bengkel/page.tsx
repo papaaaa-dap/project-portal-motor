@@ -59,27 +59,27 @@ export default function BengkelPage(){
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="text-sm text-neutral-500"><Link href="/" className="hover:text-slate-900">Home</Link> / <span className="text-slate-900 font-medium">Bengkel</span></div>
+      <div className="text-sm text-[var(--muted-foreground)]"><Link href="/" className="hover:text-[var(--foreground)]">Home</Link> / <span className="text-[var(--foreground)] font-medium">Bengkel</span></div>
       <h1 className="mt-2 text-2xl font-bold">Bengkel Surabaya</h1>
-      <p className="text-sm text-neutral-500">Gunakan lokasi untuk urutkan terdekat. Sumber data seeder 12 bengkel (MVP → 50).</p>
+      <p className="text-sm text-[var(--muted-foreground)]">Gunakan lokasi untuk urutkan terdekat. Sumber data seeder 12 bengkel (MVP → 50).</p>
       <div className="mt-4 flex flex-wrap gap-2 items-center">
-        <button onClick={handleLoc} className="px-4 py-2 rounded-full bg-[#0A0A0A] text-white text-sm font-bold hover:bg-black transition">📍 Lokasi sekali</button>
-        <button onClick={toggleWatch} className={`px-4 py-2 rounded-full text-sm font-bold border transition ${watching ? "bg-blue-600 text-white border-blue-600 animate-pulse" : "bg-white border-[#0A0A0A]/15 hover:border-[#0A0A0A]"}`}>{watching ? "⏸ Hentikan pantau" : "🔴 Pantau realtime"}</button>
-        {loc && <span className={`text-xs px-2 py-1 rounded-full ${watching ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}`}>{watching ? "Live:" : "Lokasi:"} {loc[0].toFixed(4)}, {loc[1].toFixed(4)}</span>}
-        {err && <span className="text-xs bg-neutral-100 text-neutral-900 px-2 py-1 rounded-full">{err}</span>}
+        <button onClick={handleLoc} className="px-4 py-2 rounded-full bg-[var(--foreground)] text-[var(--background)] text-sm font-bold hover:opacity-90 transition">📍 Lokasi sekali</button>
+        <button onClick={toggleWatch} className={`px-4 py-2 rounded-full text-sm font-bold border transition ${watching ? "bg-blue-600 text-white border-blue-600 animate-pulse" : "bg-[var(--card)] border-[var(--border)] hover:border-[var(--foreground)]"}`}>{watching ? "⏸ Hentikan pantau" : "🔴 Pantau realtime"}</button>
+        {loc && <span className={`text-xs px-2 py-1 rounded-full ${watching ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>{watching ? "Live:" : "Lokasi:"} {loc[0].toFixed(4)}, {loc[1].toFixed(4)}</span>}
+        {err && <span className="text-xs bg-[var(--muted)] text-[var(--foreground)] px-2 py-1 rounded-full">{err}</span>}
       </div>
-      {watching && <p className="mt-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg p-2">Realtime aktif — pin biru ikut gerak, jarak `km` update otomatis. Matikan jika mau hemat baterai. Butuh HTTPS + izin lokasi.</p>}
+      {watching && <p className="mt-2 text-xs text-blue-400 bg-blue-900/20 border border-blue-800/30 rounded-lg p-2">Realtime aktif — pin biru ikut gerak, jarak `km` update otomatis. Matikan jika mau hemat baterai. Butuh HTTPS + izin lokasi.</p>}
       <div className="mt-4">
-        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari bengkel / kecamatan..." className="w-full max-w-md h-10 border rounded-full px-4 bg-white"/>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Cari bengkel / kecamatan..." className="w-full max-w-md h-10 border rounded-full px-4 bg-[var(--card)] text-[var(--foreground)]"/>
       </div>
       <div className="mt-3 flex flex-wrap gap-2 items-center">
         {["Semua","Bengkel","Tambal Ban","Cuci Motor"].map(f=>(
-          <button key={f} onClick={()=>setFilter(f)} className={`px-3 py-1.5 rounded-full text-sm border ${filter===f?"bg-neutral-900 text-white":"bg-white"}`}>{f}</button>
+          <button key={f} onClick={()=>setFilter(f)} className={`px-3 py-1.5 rounded-full text-sm border ${filter===f?"bg-[var(--foreground)] text-[var(--background)]":"bg-[var(--card)]"}`}>{f}</button>
         ))}
-        <button onClick={()=>setOpenOnly(v=>!v)} className={`px-3 py-1.5 rounded-full text-sm border font-bold flex items-center gap-1.5 ${openOnly ? "bg-green-600 text-white border-green-600" : "bg-white hover:bg-green-50"}`}>
+        <button onClick={()=>setOpenOnly(v=>!v)} className={`px-3 py-1.5 rounded-full text-sm border font-bold flex items-center gap-1.5 ${openOnly ? "bg-green-600 text-white border-green-600" : "bg-[var(--card)] hover:bg-green-900/20"}`}>
           <span className={`h-2 w-2 rounded-full ${openOnly ? "bg-white animate-pulse" : "bg-green-600"}`} /> {openOnly ? "Buka sekarang ✓" : "Buka sekarang"}
         </button>
-        {openOnly && <span className="mono text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">{list.length} buka</span>}
+        {openOnly && <span className="mono text-xs text-green-400 bg-green-900/20 border border-green-800/30 px-2 py-1 rounded-full">{list.length} buka</span>}
       </div>
       <div className="mt-6 grid lg:grid-cols-2 gap-6">
         <div><LeafletMap workshops={list} center={loc||undefined} userLocation={loc}/></div>
@@ -87,11 +87,11 @@ export default function BengkelPage(){
           {list.map((w:any)=>(
             <div key={w.id}>
               <WorkshopCard w={w}/>
-              {w._d!==undefined && w._d !== Infinity && <p className="text-xs text-neutral-500 ml-1">~{w._d.toFixed(1)} km dari kamu • <a href={mapsUrlForWorkshop(w)} target="_blank" className="text-neutral-900">Navigasi</a></p>}
-              {(w._d===undefined || w._d===Infinity) && <p className="text-xs text-neutral-500 ml-1"><a href={mapsUrlForWorkshop(w)} target="_blank" className="text-neutral-900">Buka di Google Maps →</a></p>}
+              {w._d!==undefined && w._d !== Infinity && <p className="text-xs text-[var(--muted-foreground)] ml-1">~{w._d.toFixed(1)} km dari kamu • <a href={mapsUrlForWorkshop(w)} target="_blank" className="text-[var(--foreground)]">Navigasi</a></p>}
+              {(w._d===undefined || w._d===Infinity) && <p className="text-xs text-[var(--muted-foreground)] ml-1"><a href={mapsUrlForWorkshop(w)} target="_blank" className="text-[var(--foreground)]">Buka di Google Maps →</a></p>}
             </div>
           ))}
-          {list.length===0 && <p className="text-center text-neutral-500 py-10">Tidak ada hasil.</p>}
+          {list.length===0 && <p className="text-center text-[var(--muted-foreground)] py-10">Tidak ada hasil.</p>}
         </div>
       </div>
     </div>
