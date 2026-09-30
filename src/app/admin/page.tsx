@@ -36,6 +36,7 @@ export default function Admin() {
   const [specList, setSpecList] = useState<MotorSpecItem[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("Semua");
+  const [wQ, setWQ] = useState("");
   const [showForm, setShowForm] = useState<null | "part" | "bengkel" | "artikel" | "masalah" | "rule" | "spec">(null);
   const [editingPart, setEditingPart] = useState<Part | null>(null);
   const [editingW, setEditingW] = useState<Workshop | null>(null);
@@ -207,6 +208,17 @@ export default function Admin() {
     )
       return false;
     return true;
+  });
+
+  const filteredW = wList.filter((w) => {
+    if (!wQ.trim()) return true;
+    const s = wQ.toLowerCase().trim();
+    return (
+      w.name.toLowerCase().includes(s) ||
+      w.kecamatan.toLowerCase().includes(s) ||
+      w.address.toLowerCase().includes(s) ||
+      (w.layanan || []).some((l) => l.toLowerCase().includes(s))
+    );
   });
 
   return (
@@ -409,8 +421,19 @@ export default function Admin() {
             </button>
           </div>
           <p className="text-xs text-neutral-500 mt-1">CRUD Supabase langsung — tabel workshops.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <input
+              value={wQ}
+              onChange={(e) => setWQ(e.target.value)}
+              placeholder="Cari: nama, kecamatan, layanan... cth: Tambal Ban"
+              className="h-9 flex-1 min-w-[180px] border rounded-full px-4 text-sm bg-white"
+            />
+            <span className="h-9 px-3 rounded-full bg-neutral-100 border mono text-xs grid place-items-center">
+              {filteredW.length} / {wList.length}
+            </span>
+          </div>
           <ul className="mt-3 text-sm space-y-1 max-h-[420px] overflow-auto">
-            {wList.map((w) => (
+            {filteredW.map((w) => (
               <li key={w.id} className="flex justify-between items-center border-b py-2 gap-2">
                 <span className="truncate pr-2">
                   <b>{w.name}</b>{" "}
@@ -443,7 +466,11 @@ export default function Admin() {
                 </span>
               </li>
             ))}
-            {wList.length === 0 && <li className="py-8 text-center text-sm text-neutral-500">Belum ada bengkel di Supabase.</li>}
+            {filteredW.length === 0 && (
+              <li className="py-8 text-center text-sm text-neutral-500">
+                {wList.length === 0 ? "Belum ada bengkel di Supabase." : `Tidak ketemu "${wQ}". Coba kata lain.`}
+              </li>
+            )}
           </ul>
         </div>
       )}

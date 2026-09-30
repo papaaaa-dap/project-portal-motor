@@ -5,6 +5,23 @@ import { slugify } from "@/lib/repo/workshopsRepo";
 import { parseGoogleMapsLink } from "@/lib/maps";
 import CoverUpload from "@/components/admin/CoverUpload";
 
+export const STANDAR_LAYANAN = ["Bengkel", "Tambal Ban", "Cuci Motor"];
+
+function normalizeLayanan(raw: string[]): string[] {
+  return raw
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const low = s.toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+      if (low === "tambal ban" || low === "tambalban" || low === "tambal") return "Tambal Ban";
+      if (low === "cuci motor" || low === "cucimotor" || low === "cuci" || low === "steam") return "Cuci Motor";
+      if (low === "bengkel" || low === "servis" || low === "service" || low === "servis motor") return "Bengkel";
+      // Title-case lainnya: "ganti oli" -> "Ganti Oli"
+      return low.replace(/\b\w/g, (c) => c.toUpperCase());
+    })
+    .filter((v, i, a) => a.indexOf(v) === i);
+}
+
 export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:Workshop)=>void; onClose:()=>void; initial?: Workshop|null }){
   const [name, setName] = useState(initial?.name||"");
   const [address, setAddress] = useState(initial?.address||"");
@@ -30,7 +47,7 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
       lat: parsed.lat ?? initial?.lat,
       lng: parsed.lng ?? initial?.lng,
       maps_url: parsed.maps_url,
-      jam_operasional: jam, layanan: layanan.split(",").map(s=>s.trim()).filter(Boolean),
+      jam_operasional: jam, layanan: normalizeLayanan(layanan.split(",")),
       kontak: kontak||"031-xxxxxxx", foto_url: foto||"/motor4.jpeg",
       rating: parseFloat(rating)||4.5
     } as unknown as Workshop & { maps_url: string };
@@ -54,7 +71,30 @@ export default function WorkshopForm({ onSave, onClose, initial }: { onSave:(w:W
             <label className="text-xs font-bold">Jam<input value={jam} onChange={e=>setJam(e.target.value)} placeholder="08:00-17:00 / 24 Jam" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
           </div>
           <label className="text-xs font-bold">Link Google Maps *<input value={mapsUrl} onChange={e=>setMapsUrl(e.target.value)} placeholder="https://maps.google.com/?q=-7.2975,112.738 atau https://goo.gl/maps/..." className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/><span className="mono text-[10px] font-normal text-neutral-500">Contoh: https://maps.app.goo.gl/xxxx atau https://www.google.com/maps/place/.../@-7.28,112.73,15z — buka di Google Maps lalu Share</span></label>
-          <label className="text-xs font-bold">Layanan (koma)<input value={layanan} onChange={e=>setLayanan(e.target.value)} placeholder="Bengkel, Ganti Oli, CVT" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
+          <div>
+            <span className="text-xs font-bold">Layanan (koma)</span>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {STANDAR_LAYANAN.map((s) => {
+                const active = normalizeLayanan(layanan.split(",")).includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      const cur = normalizeLayanan(layanan.split(","));
+                      const next = active ? cur.filter((x) => x !== s) : [...cur, s];
+                      setLayanan(next.join(", "));
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${active ? "bg-[#0A0A0A] text-white border-[#0A0A0A]" : "bg-white hover:bg-neutral-100"}`}
+                  >
+                    {active ? `✓ ${s}` : `+ ${s}`}
+                  </button>
+                );
+              })}
+            </div>
+            <input value={layanan} onChange={e=>setLayanan(e.target.value)} placeholder="Bengkel, Tambal Ban, Cuci Motor" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/>
+            <span className="mono text-[10px] font-normal text-neutral-500">Wajib pisahkan dengan koma. Contoh: Bengkel, Tambal Ban, Cuci Motor. Otomatis dibetulkan walau ketik &quot;cucimotor&quot; / huruf kecil.</span>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <label className="text-xs font-bold">Kontak<input value={kontak} onChange={e=>setKontak(e.target.value)} placeholder="031-8281234" className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>
             <label className="text-xs font-bold">Rating<input type="number" step="0.1" value={rating} onChange={e=>setRating(e.target.value)} className="mt-1 w-full h-9 border rounded-lg px-3 text-sm font-normal"/></label>

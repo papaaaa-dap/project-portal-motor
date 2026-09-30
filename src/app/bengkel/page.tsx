@@ -45,7 +45,10 @@ export default function BengkelPage(){
 
   const list = useMemo(()=>{
     let l=[...workshops] as unknown as (typeof workshops[0] & { maps_url?: string })[];
-    if(filter!=="Semua") l=l.filter(w=>w.layanan.includes(filter));
+    if(filter!=="Semua") {
+      const f = filter.toLowerCase().trim();
+      l=l.filter(w=> (w.layanan||[]).some((s:string)=> s.toLowerCase().trim() === f || s.toLowerCase().trim().includes(f)));
+    }
     if(q) l=l.filter(w=> w.name.toLowerCase().includes(q.toLowerCase()) || w.kecamatan.toLowerCase().includes(q.toLowerCase()));
     if(openOnly) l=l.filter(w=> getOpenStatus(w.jam_operasional).isOpen);
     if(loc){
