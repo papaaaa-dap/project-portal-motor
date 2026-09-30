@@ -25,7 +25,14 @@ export const metadata: Metadata = {
     images: [{ url: "/motor1.jpeg", width: 1200, height: 630, alt: "Motorkita" }],
   },
   twitter: { card: "summary_large_image", title: "Motorkita", description: "Save Your Bike, Save Your Time", images: ["/motor1.jpeg"] },
-  icons: { icon: "/logo-motorkita.png", apple: "/logo-motorkita.png" },
+  icons: {
+    icon: [
+      { url: "/logo-motorkita.png", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    shortcut: "/logo-motorkita.png",
+    apple: "/logo-motorkita.png",
+  },
   appleWebApp: { capable: true, title: "Motorkita", statusBarStyle: "black" },
 };
 
