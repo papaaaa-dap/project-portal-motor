@@ -17,9 +17,14 @@ export async function generateMetadata({params}:{params: Promise<{id:string}>}):
   const { id } = await params;
   const w = await getWorkshop(id);
   if (!w) return { title: "Bengkel tidak ditemukan" };
-  const title = `${w.name} — ${w.kecamatan}`;
-  const description = `${w.address}. Jam: ${w.jam_operasional}. Layanan: ${w.layanan.slice(0, 4).join(", ")}. Rating ${w.rating}.`;
-  return { title, description, openGraph: { title, description, images: [{ url: w.foto_url, alt: w.name }] } };
+  const title = `${w.name} — Bengkel ${w.kecamatan}, Surabaya`;
+  const description = `${w.address}. Jam: ${w.jam_operasional}. Layanan: ${w.layanan.slice(0, 4).join(", ")}. Rating ${w.rating}. Navigasi & kontak langsung.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/bengkel/${id}` },
+    openGraph: { title, description, type: "website", images: [{ url: w.foto_url, alt: w.name }] },
+  };
 }
 
 export default async function Detail({params}:{params: Promise<{id:string}>}){

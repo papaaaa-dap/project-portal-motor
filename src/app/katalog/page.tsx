@@ -1,6 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { fetchParts, fetchWorkshops } from "@/lib/supabase/queries";
 import type { PartCategory } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Katalog Oli & Sparepart Motor Harga Surabaya",
+  description: "Katalog oli mesin, CVT, ban, busi, kampas rem, aki, rantai — harga part real Surabaya, spek lengkap, cocok untuk Beat, Vario, NMAX, Aerox, Scoopy. Cek bengkel yang jual.",
+  alternates: { canonical: "/katalog" },
+  openGraph: { title: "Katalog Oli & Sparepart Motor — Motorkita", description: "Harga part real Surabaya + spek + bengkel yang jual.", type: "website" },
+};
 
 const cats: { slug: PartCategory; label: string }[] = [
   { slug: "oli-mesin", label: "Oli Mesin" },

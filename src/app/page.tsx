@@ -19,8 +19,8 @@ export default async function HomePage(){
       <section className="relative overflow-hidden bg-[var(--background)]">
         <div className="mx-auto max-w-[1280px] px-4 sm:px-6 pt-10 md:pt-14 pb-6 text-center relative">
           <h1 className="font-black tracking-[-0.05em] leading-[0.9] text-[38px] sm:text-[52px] lg:text-[68px] text-[var(--foreground)]">
-            <span className="block">Save Your Bike,</span>
-            <span className="block">Save Your Time.</span>
+            <span className="block">Bengkel Motor Surabaya?</span>
+            <span className="block">Save Your Bike, Save Your Time.</span>
           </h1>
           <p className="mt-4 mx-auto max-w-[46ch] text-[15px] leading-relaxed text-[var(--muted-foreground)]">Satu tempat untuk memahami, merawat, dan menemukan kebutuhan motor. Tanpa login, langsung pakai.</p>
         </div>
@@ -43,7 +43,7 @@ export default async function HomePage(){
                 "/motor4.jpeg",
               ].map((src,i)=>(
                 <div key={i} className="relative overflow-hidden bg-[var(--muted)]">
-                  <img src={src} alt={`Motor ${i+1}`} className="h-full w-full object-cover" style={i === 0 ? { objectPosition: "70% 60%" } : i === 1 ? { objectPosition: "42% 38%" } : undefined}/>
+                  <img src={src} alt={i === 0 ? "Bengkel motor Surabaya — servis dan ganti oli" : i === 1 ? "Tambal ban motor terdekat Surabaya" : i === 2 ? "Cuci motor dan perawatan Surabaya" : "Katalog oli dan sparepart motor harga Surabaya"} className="h-full w-full object-cover" style={i === 0 ? { objectPosition: "70% 60%" } : i === 1 ? { objectPosition: "42% 38%" } : undefined}/>
                   <div className="absolute inset-0 ring-1 ring-inset ring-black/5 pointer-events-none" />
                 </div>
               ))}

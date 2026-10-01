@@ -1,8 +1,16 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { fetchArticles, fetchCategories } from "@/lib/supabase/queries";
 import { ArticleCard } from "@/components/ui/Card";
 import FaqAccordion from "@/components/FaqAccordion";
 import { faqs } from "@/lib/data/oli";
+
+export const metadata: Metadata = {
+  title: "Edukasi Motor — Tips Merawat, Oli, CVT & Komponen",
+  description: "Belajar rawat motor: kapan ganti oli, servis CVT, cek ban & rem, tips hemat BBM, biar nggak gampang ditipu bengkel. Artikel + FAQ bahasa santai.",
+  alternates: { canonical: "/edukasi" },
+  openGraph: { title: "Edukasi Motor — Motorkita", description: "Paham motor, nggak gampang ditipu bengkel.", type: "website" },
+};
 
 export default async function Edukasi({
   searchParams,

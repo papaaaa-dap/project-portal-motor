@@ -18,9 +18,14 @@ export async function generateMetadata({params}:{params: Promise<{slug:string}>}
   const { slug } = await params;
   const p = await getPart(slug);
   if (!p) return { title: "Part tidak ditemukan" };
-  const title = `${p.brand} ${p.name} — Rp ${p.harga_min.toLocaleString("id-ID")}`;
-  const description = `${p.deskripsi} Cocok untuk ${p.cocok_motor.slice(0, 3).join(", ")}. Interval ganti ${p.interval_km.toLocaleString()}km.`;
-  return { title, description, openGraph: { title, description, images: [{ url: p.cover_url, alt: p.name }] } };
+  const title = `${p.brand} ${p.name} — Harga Surabaya Rp ${p.harga_min.toLocaleString("id-ID")}`;
+  const description = `${p.deskripsi} Cocok untuk ${p.cocok_motor.slice(0, 3).join(", ")}. Interval ganti ${p.interval_km.toLocaleString()}km. Cek spek & bengkel yang jual di Surabaya.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/katalog/${slug}` },
+    openGraph: { title, description, type: "website", images: [{ url: p.cover_url, alt: p.name }] },
+  };
 }
 
 export default async function PartDetail({params}:{params: Promise<{slug:string}>}){

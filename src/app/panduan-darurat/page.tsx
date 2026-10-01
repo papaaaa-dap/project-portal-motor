@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import { fetchProblems } from "@/lib/supabase/queries";
 
 export const metadata: Metadata = {
-  title: "Panduan Darurat — Mogok, Ban Bocor, Overheat",
-  description: "Langkah 3-tap saat mogok di jalan: ban bocor, rem blong, overheat, kehabisan bensin. Bisa dibaca offline setelah dibuka sekali.",
+  title: "Panduan Darurat Motor — Mogok, Ban Bocor, Overheat di Jalan",
+  description: "Mogok di jalan? Langkah 3-tap saat ban bocor, rem blong, overheat, kehabisan bensin + cari tambal ban & bengkel 24 jam terdekat Surabaya. Bisa dibaca offline.",
+  alternates: { canonical: "/panduan-darurat" },
+  openGraph: { title: "Panduan Darurat Motor — Motorkita", description: "Mogok? Jangan panik. Langkah cepat + bengkel terdekat.", type: "website" },
 };
 export default async function Darurat(){
   const motorProblems = await fetchProblems().catch(() => []);

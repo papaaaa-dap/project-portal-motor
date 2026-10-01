@@ -108,7 +108,7 @@ export default function Footer() {
             </ul>
             <div className="mt-4 pt-3 border-t border-neutral-800 space-y-1 mono text-[11px] text-neutral-500">
               <p>Khusus motor standar Indonesia.</p>
-              <p className="text-neutral-400 font-medium">halo@motorkita.id</p>
+              <p className="text-neutral-400 font-medium">halo@motorkita.my.id</p>
             </div>
           </div>
         </div>

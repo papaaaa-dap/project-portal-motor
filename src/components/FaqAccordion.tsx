@@ -24,7 +24,7 @@ export default function FaqAccordion({ items, allowContact=false }: { items: Faq
           <h4 className="font-black tracking-tight">Masih bingung?</h4>
           <p className="text-sm text-white/70 mt-1">Hubungi tim Motorkita — bukan bot, balas manual jam kerja.</p>
           <div className="mt-3 flex flex-col sm:flex-row gap-2 mono text-xs">
-            <a href="mailto:halo@motorkita.id" className="h-9 px-4 rounded-full bg-white text-[#0A0A0A] font-black grid place-items-center hover:bg-neutral-200 transition">halo@motorkita.id</a>
+            <a href="mailto:halo@motorkita.my.id" className="h-9 px-4 rounded-full bg-white text-[#0A0A0A] font-black grid place-items-center hover:bg-neutral-200 transition">halo@motorkita.my.id</a>
             <a href="https://wa.me/6285852209624" target="_blank" className="h-9 px-4 rounded-full border border-white/20 text-white font-bold grid place-items-center hover:bg-white/10 transition">WA 0811-2345-678</a>
           </div>
           <p className="mono text-[11px] text-white/40 mt-2">Jam balas: 08:00–17:00 WIB • Surabaya</p>

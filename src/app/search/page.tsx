@@ -1,6 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { fetchParts, fetchArticles, fetchWorkshops, fetchProblems, fetchCategories } from "@/lib/supabase/queries";
 import { ArticleCard, WorkshopCard } from "@/components/ui/Card";
+
+export const metadata: Metadata = {
+  title: "Cari Bengkel, Oli, Sparepart & Masalah Motor",
+  description: "Pencarian Motorkita: bengkel Surabaya, oli, sparepart, artikel edukasi, dan solusi masalah motor dalam satu kolom cari.",
+  alternates: { canonical: "/search" },
+  robots: { index: false, follow: true },
+};
 export default async function Search({searchParams}:{searchParams: Promise<{q?:string}>}){
   const sp=await searchParams;
   const q = sp.q||"";
